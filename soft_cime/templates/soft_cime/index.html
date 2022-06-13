@@ -11,100 +11,181 @@ Dashboard | SoftCIME
     
     <div class="row justify-content-around custom-line">
         <h1 class="h1 text-center text-uppercase">Bienvenue M. {{personnel.nom}}</h1><hr>
-        <div class="col-3">
-            <div class="card bg-success row">
+        <div class="col-3 row">
+            <div class="card bg-success bg-gradient col-11">
                 <table>
                     <tr>
-                        <th class="h1 border-right p-3 text-white" style="font-size:100px;"><i class="bi bi-people-fill"></i></th>
+                        <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-people-fill"></i></th>
                         <td class="p-3">
                             <h5 class="h5 text-white text-uppercase">Contribuables</h5>
                             <b class="h1 text-white">{{nbcontrib}}</b><p>
-                            <div class="progress" style="height: 5px;">
-                                {% for ug in ugs %}
-                                <div class="progress-bar" role="progressbar" style="width: {{ug.contribuable_set.count}}%; background: {%cycle 'royalblue' 'tomato' 'gold' 'red' 'lime'%};" aria-valuenow="{{ug.contribuable_set.count}}" aria-valuemin="0" aria-valuemax="{{nbcontrib}}"></div>
-                                {% endfor %}
-                                
-                            </div>
-                            <span class="text-center">
-                                UG : 
-                                {% for ug in ugs %}
-                                    {{ug.ug}}  <i class="bi bi-square-fill" style="color: {%cycle 'royalblue' 'tomato' 'gold' 'red' 'lime'%};"></i> 
-                                {% endfor %}
-                            </span>
+
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
-        <div class="col-3">
-            <div class="card bg-danger row">
+        <div class="col-3 row">
+            <div class="card bg-danger bg-gradient col-11">
                 <table>
                     <tr>
-                        <th class="h1 border-right p-3 text-white" style="font-size:100px;"><i class="bi bi-file-earmark-spreadsheet-fill"></i></th>
+                        <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-file-earmark-spreadsheet-fill"></i></th>
                         <td class="p-3">
-                            <h5 class="h5 text-white text-uppercase">Déclarations ({{today.month}})</h5>
+                            <h5 class="h5 text-white text-uppercase">Déclarations ({{mois}})</h5>
                             <b class="h1 text-white">{{nbDec}}</b><p>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: {{nbDec}}%" aria-valuenow="{{nbDec}}" aria-valuemin="0" aria-valuemax="{{nbcontrib}}">{{nbDec}}</div>
-                            </div>
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
-        <div class="col-3">
-            <div class="card bg-warning row">
+        <div class="col-3 row">
+            <div class="card bg-warning bg-gradient col-11">
                 <table>
                     <tr>
-                        <th class="h1 border-right p-3 text-white" style="font-size:100px;"><i class="bi bi-cash-coin"></i></th>
+                        <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-cash-coin"></i></th>
                         <td class="p-3">
-                            <h5 class="h5 text-white text-uppercase">Payements ({{today.month}})</h5>
+                            <h5 class="h5 text-white text-uppercase">Payements ({{mois}})</h5>
                             <b class="h1 text-white">{{nbPaye}}</b><p>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: {{nbPaye}}%" aria-valuenow="{{nbPaye}}" aria-valuemin="0" aria-valuemax="{{nbcontrib}}">{{nbPaye}}</div>
-                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="col-3 row">
+            <div class="card bg-info bg-gradient col-11">
+                <table>
+                    <tr>
+                        <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-cash-coin"></i></th>
+                        <td class="p-3">
+                            <h5 class="h5 text-white text-uppercase">AMR ({{mois}})</h5>
+                            <b class="h1 text-white">{{nbAmr}}</b><p>
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-6 p-3 container-fluid">
+    <div class="row mt-5">
+        <div class="col-4 container bg-opacity-75 bg-white bg-gradient p-5 shadow">
+            <h5 class="text-center h3 small">REPARTITION PAR UG</h5>
+            <canvas id="repartition_ug" ></canvas>
+        </div>
+        <div class="col-4 container bg-opacity-75 bg-white bg-gradient p-5 shadow">
+            <h5 class="text-center h3 small">REPARTITION PAR SOUS SECTEUR</h5>
+            <canvas id="repartition_ss" ></canvas>
+        </div>
+        <div class="col-4 container bg-opacity-75 bg-white bg-gradient p-5 shadow">
+            <canvas id="chart_dec_mois" ></canvas>
+        </div>
+        
+        {% comment %} <div class="col-6 p-3 container-fluid">
             <img src="data:image/png;base64,{{data}}" alt="" class="img-fluid">
         </div>
         <div class="col-6 p-3 container-fluid">
             <img src="data:image/png;base64,{{data}}" alt="" class="img-fluid" >
-        </div>
+        </div> {% endcomment %}
     </div>
+    <script>
+        var barColors = [
+        "#b91d47",
+        "#00aba9",
+        "#2b5797",
+        "#e8c3b9",
+        "#1e7145"
+        ];
 
-<script>
-    var xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
-    var yValues = [55, 49, 44, 24, 15];
-    var barColors = [
-    "#b91d47",
-    "#00aba9",
-    "#2b5797",
-    "#e8c3b9",
-    "#1e7145"
-    ];
+    
 
-    new Chart("myChart", {
-    type: "pie",
-    data: {
-        labels: xValues,
-        datasets: [{
-        backgroundColor: barColors,
-        data: yValues
-        }]
-    },
-    options: {
-        title: {
-        display: true,
-        text: "World Wide Wine Production 2018"
-        }
-    }
-    });
-</script>
+        var config = {
+            type: 'pie',
+            data: {
+            datasets: [{
+                data: {{ ug_nbs|safe }},
+                backgroundColor: barColors,
+                label: 'REPARTITION PAR UG'
+            }],
+            labels: {{ ug_labels|safe }}
+            },
+            options: {
+            responsive: true
+            }
+        };
+
+        var config2 = {
+            type: 'bar',
+            data: {
+            datasets: [{
+                data: {{ ss_nbs|safe }},
+                backgroundColor: barColors,
+                label: 'REPARTITION PAR SS'
+            }],
+            labels: {{ ss_labels|safe }}
+            },
+            options: {
+            responsive: true
+            }
+        };
+
+        var config1 = {
+            type: 'bar',
+            data: {
+                labels: {{labels_month|safe}},
+                datasets: [{
+                    label: 'DECLARATION PAR MOIS',
+                    data: {{ nbdec_mois|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132)',
+                        'rgba(255, 159, 64)',
+                        'rgba(255, 205, 86)',
+                        'rgba(75, 192, 192)',
+                        'rgba(54, 162, 235)',
+                        'rgba(153, 102, 255)',
+                        'rgba(201, 203, 207)',
+                        'rgba(255, 99, 132)',
+                        'rgba(255, 159, 64)',
+                        'rgba(255, 205, 86)',
+                        'rgba(75, 192, 192)',
+                        'rgba(54, 162, 235)'
+                        ],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(255, 159, 64)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(54, 162, 235)',
+                        'rgb(153, 102, 255)',
+                        'rgb(201, 203, 207)',
+                        'rgb(255, 99, 132)',
+                        'rgb(255, 159, 64)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(54, 162, 235)'
+                        ],
+                
+                }],
+                borderWidth: 1
+                
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                }
+            }
+        };
+
+        window.onload = function() {
+            var ctx1 = document.getElementById('chart_dec_mois').getContext('2d');
+            window.myBar = new Chart(ctx1, config1);
+
+            var ctx = document.getElementById('repartition_ug').getContext('2d');
+            window.myPie = new Chart(ctx, config);
+
+            var ctx2 = document.getElementById('repartition_ss').getContext('2d');
+            window.myPie = new Chart(ctx2, config2);
+        };
+    </script>
 
 {% endblock contain %}

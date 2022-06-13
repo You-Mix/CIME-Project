@@ -32,7 +32,20 @@ from django.db.models import Q
 from django.db.models import Sum
 # Create your views here.
 today = date.today()
-
+mois ={
+        1: "Janvier", 
+        2: "Fevrier",
+        3: "Mars",
+        4: "Avril",
+        5: "Mai",
+        6: "Juin", 
+        7: "Juillet",
+        8: "Août",
+        9: "Septembre",
+        10: "Octobre",
+        11: "Novembre",
+        12: "Décembre",
+    }
 
 def connexion(request):
     if request.method == "POST":
@@ -78,45 +91,26 @@ def index(request):
             couleur.append("("+str(r())+","+str(r())+","+str(r())+")")
             
         ugs = UG.objects.all()
-        
-        tab_contrib = []
-        recipe = []
+        ug_labels = []
+        ug_nbs = []
         for ug in ugs:
-            recipe.append(str(ug.contribuable_set.count()) + " UG " + str(ug.ug) )
-                
+            ug_labels.append("UG " + str(ug.ug) + " : " + ug.activite)
+            ug_nbs.append(ug.contribuable_set.count())
+        
+        
+        sous_secteurs = Sous_secteur.objects.all()
+        ss_labels = []
+        ss_nbs = []
+        for ss in sous_secteurs:
+            ss_labels.append(ss.libelle)
+            ss_nbs.append(ss.contribuable_set.count())
             
-        fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
-
-        
-
-        data = [float(x.split()[0]) for x in recipe]
-        ingredients = [str(x.split()[-2]) + str(x.split()[-1]) for x in recipe]
-
-
-        def func(pct, allvals):
-            absolute = int(np.round(pct/100.*np.sum(allvals)))
-            return "{:.1f}%\n({:d})".format(pct, absolute)
-
-
-        wedges, texts, autotexts = ax.pie(data, autopct=lambda pct: func(pct, data),
-                                        textprops=dict(color="w"))
-
-        ax.legend(wedges, ingredients,
-                title="Unité de gestion",
-                loc="center left",
-                bbox_to_anchor=(1, 0, 0.5, 1))
-
-        plt.setp(autotexts, size=8, weight="bold")
-
-        ax.set_title("CONTRIBUABLE EN FONCTION DES UG")
-        
-        
-        graphe = plt.gcf()
-        buf = io.BytesIO()
-        graphe.savefig(buf, format='png')
-        buf.seek(0)
-        string = base64.b64encode(buf.read())
-        uri = urllib.parse.quote(string)
+        nbdec_mois = []
+        labels_month = []
+        for i in range(1, 13):
+            nbdec_mois.append(Declaration.objects.filter(date_emission__month=i).count())
+            labels_month.append(mois[i])
+            
         
         
         
@@ -125,12 +119,15 @@ def index(request):
             "personnel" : personnel,
             "nbDec" : nbDec,
             "nbPaye" : nbPaye,
-            "ugs" : ugs,
-            "couleur" : couleur,
-            "percent" : percent,
+            "nbdec_mois" : nbdec_mois,
+            "nbAmr" : AMR.objects.count(),
+            "mois" : mois[today.month],
             "today" : today,
-            "data" : uri,
-            
+            "ug_labels" : ug_labels,
+            "ug_nbs" : ug_nbs,
+            "labels_month" : labels_month,
+            "ss_labels" : ss_labels,
+            "ss_nbs" : ss_nbs,
         }
         return render(request, "soft_cime/index.html", context)
     else:
@@ -782,20 +779,7 @@ def stats2(request):
         line.append(montant)
         montant_ss_alls.append(line)
     
-    mois ={
-        1: "Janvier", 
-        2: "Fevrier",
-        3: "Mars",
-        4: "Avril",
-        5: "Mai",
-        6: "Juin", 
-        7: "Juillet",
-        8: "Août",
-        9: "Septembre",
-        10: "Octobre",
-        11: "Novembre",
-        12: "Décembre",
-    }   
+       
     context = {
         "ugs" : ugs,
         "annee" : annee,
