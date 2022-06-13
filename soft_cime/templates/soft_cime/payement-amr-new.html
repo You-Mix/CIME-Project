@@ -1,0 +1,107 @@
+{% extends "layout/base.html" %}
+
+
+{% block title %}
+AMR | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Avis de Mise en Recouvrement
+{% endblock titleSide %}
+
+{% block liSide %}
+    <li class="nav-item">
+        <a href="{% url 'liste_amr' %}" class="nav-link align-middle px-0 text-white-50">
+            <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Historique AMR</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{%url 'new_amr'%}" class="nav-link align-middle px-0 text-white-50">
+            <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Enregistrer un AMR</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="#" class="nav-link align-middle px-0 text-white fw-bold">
+            <i class="bi bi-pen-fill"></i> <span class="ms-1 d-none d-sm-inline">AMR Payés</span>
+        </a>
+    </li>
+
+{% endblock liSide %}
+
+{% block contain %}
+<div class="container-fluid px-1 py-5 mx-auto">
+    <div class="row d-flex justify-content-center">
+        <div class="col-xl-7 col-lg-9 col-md-9 col-11 text-center">
+            <div class="card">
+                <h5 class="text-center  card-header bg-success text-white">PAYEMENT AMR</h5>
+                <form class="form-card card-body m-4 text-start" method="POST" action="">
+                {% csrf_token %}
+                    <div class="row justify-content-between mb-3 ">
+                        <div class="form-group col-sm-6 flex-column d-flex"> 
+                            <label class="form-control-label px-3" for="num_amr">Numero AMR<span class="text-danger"> *</span></label> 
+                            <input type="text" class="form-control" id="num_amr" name="num_amr" placeholder="Entrer le Numero AMR" list="liste-amr">
+                            <datalist id="liste-amr">
+                                {% for amr in amrs %}
+                                <option value="{{amr.num_amr}}">{{amr.num_amr}}</option> 
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="form-group col-sm-6 flex-column d-flex"> 
+                            <label class="form-control-label px-3" for="contribuable">Contribuable<span class="text-danger"> *</span></label> 
+                            <input type="text" class="form-control" id="contribuable" name="contribuable" placeholder="Entrer le NIU" list="liste-contribuable">
+                            <datalist id="liste-contribuable">
+                                {% for contribuable in contribuables %}
+                                <option value="{{contribuable.NIU}}">{{contribuable.NIU}}</option> 
+                                {% endfor %}
+                            </datalist>
+
+                        </div>
+                    </div>
+                    <div class="row justify-content-between text-left mb-3">
+                        <div class="form-group col-sm-6 flex-column d-flex"> 
+                            <label class="form-control-label px-3" for="montant">Montant<span class="text-danger"> *</span></label> 
+                            <input type="number" id="montant" name="montant" class="form-control" placeholder="Entrer le montant de l'AMR" required> 
+                        </div>
+                        
+                        <div class="form-group col-sm-6 flex-column d-flex"> 
+                            <label class="form-control-label px-3" for="recette_budg">Recette Budgétaire<span class="text-danger"> *</span></label> 
+                            <input type="number" id="recette_budg" name="recette_budg" class="form-control" placeholder="Entrer le montant de la recette budgétaire" required> 
+                        </div>
+                    </div>
+                    <div class="form-group flex-column d-flex"> 
+                        <label class="form-control-label px-3" for="recette_budg">Recette<span class="text-danger"> *</span></label> 
+                        <select name="recette" id="recette" class="form-select">
+                            <option selected disableb>Selectionner le compte de la recette</option>
+                            <option value="contrôle">Contrôle</option>
+                            <option value="recouvrement">Recouvrement</option>
+                        </select>
+                    </div>
+                    <input type="submit" id="submit" name="submit" class="btn btn-success container-fluid" value="Enregistrer" > 
+                    
+                    </div>
+                
+                </form>
+                {% if success %}
+                <h5 class="card-footer text-success">{{message}}</h5>
+                {% else %}
+                <h5 class="card-footer text-danger">{{message}}</h5>
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>   
+
+
+
+
+    <script>
+        document.getElementById('amr').classList.add('fw-bold')
+        document.getElementById('amr').classList.add('fs-5')
+        $(function(){                   
+            $('#contribuable').autocomplete();
+            $('#num_amr').autocomplete();
+        });
+    </script>
+       
+{% endblock contain %}

@@ -1,0 +1,125 @@
+{% extends "layout/base.html" %}
+
+
+{% block title %}
+AMR | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Avis de Mise en Recouvrement
+{% endblock titleSide %}
+
+{% block liSide %}
+<li class="nav-item">
+    <a href="{% url 'liste_amr' %}" class="nav-link align-middle px-0 text-white">
+        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Historique AMR</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{%url 'new_amr'%}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Enregistrer un AMR</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{%url 'amr_incomplet'%}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">AMR Incomplets</span>
+    </a>
+</li>
+
+{% endblock liSide %}
+
+{% block contain %}
+
+    <h4 class="bg-success text-white text-center"> {{nbamr}}  AMR</h4>
+    <table id="example" class="table table-striped table-bordered table-hover" style="width:100%" >
+        
+       
+
+        <thead>
+            <tr>
+                <th rowspan="2">N° AMR</th>
+                <th rowspan="2">Date émission</th>
+                <th colspan="2" class="text-center">Contribuable</th>
+                <th rowspan="2">Impôts</th>
+                <th rowspan="2">Recette</th>
+                <th rowspan="2">Emis par</th>
+                <th rowspan="2">Détail</th>
+            </tr>
+            <tr>
+                <th>NIU</th>
+                <th>Raison Sociale</th>
+            </tr>
+        </thead>
+        <tbody>
+           {% for amr in amrs %}
+            <tr>
+                <td>{{amr.num_amr}}</td>
+                <td>{{amr.date}}</td>
+                <td>{{amr.contribuable.NIU}}</td>
+                <td>{{amr.contribuable.raison_social}}</td>
+                <td class="p-0">
+                    <table class="table-info container-fluid">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Impot
+                                </th>
+                                <th>
+                                    Montant
+                                </th>
+                                <th>
+                                    Montant Budg
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for impot in impots_amr %}
+                                {% if impot.amr == amr %}
+                                <tr>
+                                    <td>
+                                        {{impot.impot.impot}} 
+                                    </td>
+                                    <td>
+                                        {{impot.montant}}
+                                    </td>
+                                    <td>
+                                        {{impot.montant_budg}}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+                <td>{{amr.recette}}</td>
+                <td>{{amr.personnel.nom}}</td>
+                <td>
+                    <a href="{% url 'detail_amr' amr.id %}" class="text-primary text-center" class="text-danger" alt="Détail"><i class="bi bi-info-square-fill"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+            
+        </tbody>
+        <tfoot>
+            <tr>
+                <th >N° AMR</th>
+                <th>Date émission</th>
+                <th colspan="2" class="text-center">Contribuable</th>
+                <th>Impôts</th>
+                <th>Recette</th>
+                <th>Emis par</th>
+                <th>Détail</th>
+            </tr>
+        </tfoot>
+    </table>
+
+
+
+
+
+    <script>
+        document.getElementById('amr').classList.add('fw-bold')
+        document.getElementById('amr').classList.add('fs-5')
+
+    </script>
+{% endblock contain %}

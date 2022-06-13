@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.88.1">
+    <title>{% block title%} Login | Soft CIME {% endblock %}</title>
+
+    {%load static %}
+    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/dataTables.bootstrap5.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/bootstrap-icons.css" %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.2/font/bootstrap-icons.css">
+
+<body class="bg-success">
+	<div class="container h-100">
+		<div class="d-flex justify-content-center h-100">
+			<div class="user_card">
+				<div class="d-flex justify-content-center border-5 border-success mb-3">
+					<div class="brand_logo_container bg-success ">
+						<img src="{% static "img/logo-dgi.png" %}" class="bg-white  rounded-circle w-100 h-100" alt="Logo DGI">
+					</div>
+					
+				</div>
+				
+				<div style="height:200px;" class="ps-5 pe-5 pt-5">
+					<a href="{% url 'index'%}" >
+						<img src="{% static 'img/logo_gestionnaire_vert.png' %}" class="img-fluid">
+					</a>
+				</div>
+				<div class="d-flex justify-content-center text-center">
+					<form method="POST">
+						{% csrf_token %}
+						<div class="input-group mb-3">
+							<span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+							<input type="text" name="username" class="form-control input_user" value="" placeholder="username">
+						</div>
+						<div class="input-group mb-2">
+							<span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+							<input type="password" name="password" class="form-control" value="" placeholder="password">
+						</div>
+						<div class="d-flex justify-content-center mt-3 login_container">
+				 			<button type="submit" name="button" class="btn btn-success ps-4 pe-4">Login</button>
+				   		</div>
+						<h5 class="text-danger">
+							&nbsp
+
+							{% for message in messages %}
+								{{message}}
+							{% endfor %}
+
+							&nbsp
+						</h5>
+					</form>
+				</div>
+		
+			</div>
+		</div>
+	</div>
+	<style>
+			/* Coded with love by Mutiullah Samim */
+		body,
+		html {
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			background: #60a3bc !important;
+		}
+		.user_card {
+			height: 350px;
+			width: 350px;
+			margin-top: auto;
+			margin-bottom: auto;
+			background: white;
+			position: relative;
+			display: flex;
+			justify-content: center;
+			flex-direction: column;
+			padding: 10px;
+			box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+			-webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+			-moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+			border-radius: 5px;
+
+		}
+		.brand_logo_container {
+			position: absolute;
+			height: 150px;
+			width: 150px;
+			top: -75px;
+			border-radius: 50%;
+			padding: 10px;
+			text-align: center;
+		}
+
+
+		</style>
+</body>
+</html>

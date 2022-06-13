@@ -1,0 +1,172 @@
+{% extends "layout/base copy.html" %}
+
+{% block title %}
+Gestion | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Gestion et suivi
+{% endblock titleSide %}
+
+
+
+
+{% block contain %}
+    
+    <div class="container bootstrap snippets bootdey justify-content-center" >
+        
+        <div class="panel-body inf-content justify-content-center p-4" id="page" width="2480">
+            <h1 class="text-center text-uppercase border-bottom"> Détail Déclaration</h1>
+            <div class="row justify-content-center mb-3">
+                <div class="" id="infoG">
+                    <h5 class="h5 text-center text-uppercase bg-dark p-3 bg-opacity-25">Information Générales</h5>
+                    <table class="table table-user-information ">
+                        <tbody>
+                            <tr>        
+                                <td>
+                                    <strong>
+                                        <span class="glyphicon glyphicon-asterisk text-primary"></span>
+                                        N° Avis                                              
+                                    </strong>
+                                </td>
+                                <td class="text-primary">
+                                    {{declaration.num_avis}}  
+                                        
+                                </td>
+                            </tr>
+                            <tr>    
+                                <td>
+                                    <strong>
+                                        <span class="glyphicon glyphicon-user  text-primary"></span>    
+                                        Contribuable
+                                                                                    
+                                    </strong>
+                                </td>
+                                <td class="text-primary">
+                                    {{declaration.contribuable.NIU}}<br>
+                                    {{declaration.contribuable.raison_social}}
+                                    <a href="{% url 'detail_contrib' declaration.contribuable.id %}" class="text-primary text-center" class="text-danger" alt="Supprimer ?"><i class="bi bi-info-square-fill"></i></a>
+                                    
+                                        
+                                </td>
+                            </tr>
+                                    
+                            <tr>        
+                                <td>
+                                    <strong>
+                                        <span class="glyphicon glyphicon-bookmark text-primary"></span> 
+                                        Chiffre d'affaire                                            
+                                    </strong>
+                                </td>
+                                <td class="text-primary">
+                                    {{declaration.chiffre_affaire}} 
+                                        
+                                </td>
+                            </tr>
+                            <tr>        
+                                <td>
+                                    <strong>
+                                        <span class="glyphicon glyphicon-cloud text-primary"></span>  
+                                        Date d'émission
+                                                                                    
+                                    </strong>
+                                </td>
+                                <td class="text-primary">
+                                    {{declaration.date_emission}}  
+                                    
+                                </td>
+                            </tr>
+                            <tr>        
+                                <td>
+                                    <strong>
+                                        <span class="glyphicon glyphicon-cloud text-primary"></span>  
+                                        Date Limite
+                                                                                    
+                                    </strong>
+                                </td>
+                                <td class="text-primary">
+                                    {{declaration.date_limite}}  
+                                    
+                                </td>
+                            </tr>
+                            <tr>        
+                                <td>
+                                    <strong>
+                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                        Emis par                                              
+                                    </strong>
+                                </td>
+                                <td class="text-primary">
+                                    {{declaration.personnel}} 
+                                </td>
+                            </tr>
+                            <tr>        
+                                <td>
+                                    <strong>
+                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                        Statut payement                                              
+                                    </strong>
+                                </td>
+                                <td class="text-primary">
+                                    {{declaration.impot_declare_set.statut_payement}}  
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                                            
+                </div>
+                
+            </div>
+            <div class="row table-responsive justify-content-center">
+                <div class="" id="impots">
+                    <h5 class="h5 text-center text-uppercase bg-dark p-3 bg-opacity-25">Impots Déclarés</h5>
+                    <table class="table table-bordered">
+
+                        <thead>
+                            <th>impots</th>
+                            <th>Montant pricipal</th>
+                            <th>Repartition</th>
+                        </thead>
+                        <tbody>
+                            {% for impot in impots_declares %}
+                                <tr>
+                                    <td>
+                                        {{impot.impot}}
+                                    </td>
+                                    <td>
+                                        {{impot.montant}}
+                                    </td>
+                                    <td>
+                                        {% for part_impot in impot.impot.parts_impot.all %}
+                                            {{part_impot.nom}} : {% widthratio part_impot.taux 1 impot.montant %}<br>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endfor %}  
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+           
+    </div> 
+
+
+
+    <script>
+
+        const element = document.getElementById('page');
+
+        var opt = {
+            margin:       1,
+            filename:     'Déclaration {{declaration.num_avis}}.pdf',
+            image:        { type: 'jpeg', quality: 1 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'A4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save()
+
+    </script>
+{% endblock contain %}

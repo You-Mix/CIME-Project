@@ -1,0 +1,107 @@
+{% extends "layout/base.html" %}
+
+{% block title %}
+Gestion | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Gestion et suivi
+{% endblock titleSide %}
+
+{% block liSide %}
+<li class="nav-item">
+    <a href="{% url 'liste_declaration' %}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Déclarations</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{%url 'new_declaration'%}" class="nav-link align-middle px-0 text-white fw-bold">
+        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Nouvelle Déclaration</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{% url 'declaration_incomplete' %}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Déclarations incomplete</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="#" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-pen-fill"></i> <span class="ms-1 d-none d-sm-inline">Plan d'action</span>
+    </a>
+</li>
+
+{% endblock liSide %}
+
+{% block contain %}
+<div class="container-fluid px-1 py-5 mx-auto">
+    <div class="row d-flex justify-content-center">
+        <div class="col-xl-7 col-lg-9 col-md-9 col-11">
+            <div class="card ">
+                <h5 class="text-center card-header bg-success text-white">NOUVELLE DECLARATION</h5>
+                    <form class="form-card card-body m-4 text-start" method="POST" action="">
+                    {% csrf_token %}
+                        
+                        <div class="row justify-content-between mb-3 ">
+                            <label class="form-control-label px-3" for="{{impot.impot}}">Déclaration Impots<span class="text-danger"> *</span></label>
+                            <select name="impot" class="form-control form-select mb-3">
+                                <option selected disabled>Sélectionner un impot</option>
+                                {% for impot in impots %}
+                                <option value="{{impot.impot}}">{{impot.impot}}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="montant" class="form-control-label px-3">Montant de l'impôt<span class="text-danger"> *</span></label>
+                            <input type="number" class="form-control" id="montant" name="montant" placeholder="Entrer le montant">
+                        </div>
+                        
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success container-fluid">Enregistrer</button>
+                        </div>
+
+                    </form>
+                
+                <h5 class="card-footer {{classmsg}}">{{message}}</h5>
+            </div>
+            <div class="row" style="max-height:200px;overflow-y:scroll;">
+                {% comment %} <i class="text-center text-uppercase">Impots Déclarés</i> {% endcomment %}
+                <table class="table table-responsive small">
+    
+                    <thead >
+                        <th>impots</th>
+                        <th>Montant pricipal</th>
+                        <th>Repartition</th>
+                    </thead>
+                    <tbody >
+                        {% for impot in impots_declares %}
+                            <tr>
+                                <td>
+                                    {{impot.impot}}
+                                </td>
+                                <td>
+                                    {{impot.montant}}
+                                </td>
+                                <td>
+                                    {% for part_impot in impot.impot.parts_impot.all %}
+                                        {{part_impot.nom}} : {% widthratio part_impot.taux 1 impot.montant %}<br>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}  
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        
+    </div>
+</div>   
+
+
+
+
+    <script>
+        document.getElementById('gestion').classList.add('fw-bold')
+        document.getElementById('gestion').classList.add('fs-5')
+       
+    </script>
+{% endblock contain %}

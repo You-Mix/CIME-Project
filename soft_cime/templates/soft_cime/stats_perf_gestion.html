@@ -1,0 +1,114 @@
+{% extends "layout/base.html" %}
+
+{% block title %}
+Statistiques | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Statistiques
+{% endblock titleSide %}
+
+{% block liSide %}
+    <li class="nav-item">
+        <a href="{% url 'stats1' %}" class="nav-link align-middle px-0  text-white-50">
+            <i class="bi bi-table"></i> <span class="ms-1 d-none d-sm-inline">Stats Contribuable</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="#" class="nav-link align-middle px-0 text-white fw-bold" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
+            <i class="bi bi-graph-up-arrow collapsed"></i> <span class="ms-1 d-none d-sm-inline">Performance</span>
+        </a>
+        <ul class="list-unstyled fw-normal pb-1 small card-subtitle">
+            <li><a href="{%url 'stats2'%}" class="nav-link text-white"><i class="bi bi-star-fill"></i> Cellule Gestion</a></li>
+            <li><a href="{%url 'stat_perf_recette'%}" class="nav-link text-white-50"><i class="bi bi-star-fill"></i> Recette</a></li>
+        </ul>
+    </li>
+    
+    
+{% endblock liSide %}
+
+{% block contain %}
+    <h4 class="bg-success text-white text-center"> PERFORMANCE CELLULE DE GESTION ET DE SUIVI <a href="{% url 'excelStats2' %}" class="btn btn-warning"><i class="bi bi-printer-fill"></i></a></h4>
+    {% comment %} <div class="row text-end">
+        <form method="POST">
+            <input type="date" class="form-control" name="mois">
+            <a href="">
+                <button  class="btn btn-warning">
+                    <i class="bi bi-printer-fill"></i> IMPRIMER
+                </button>
+            </a>
+        </form>
+    </div> {% endcomment %}
+    <div>
+        <h5 class="text-center border-bottom">RENDEMENT PAR TYPE D'IMPOT, PAR UNITE DE GESTION ET PAR SOUS SECTEURS D'ACTIVITES (VS {{mois}} {{annee}})</h5>
+        <div class="row">
+            <div class="col-9">
+                
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="text-center">
+                                IMPOTS
+                            </th>
+                            <th colspan="{{ugs.count}}" class="text-center">
+                                Unités de gestion
+                            </th>
+                            <th rowspan="2" class="text-center">
+                                TOTAUX
+                            </th>
+                        </tr>
+                        <tr>
+                            {% for ug in ugs %}
+                            <th>
+                                {{ug}}
+                            </th>
+                            {% endfor %}
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in montant_ug_im_alls %}
+                        <tr>
+                            {% for i in line %}
+                            <td>
+                                {{i}}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <th>
+                            Sous-secteurs d'activités
+                        </th>
+                        <th>
+                            TOTAUX
+                        </th>
+                    </thead>
+                    <tbody>
+                        {% for line in montant_ss_alls %}
+                        <tr>
+                            {% for i in line %}
+                            <td>
+                                {{i}}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        document.getElementById('stats').classList.add('fw-bold')
+        document.getElementById('stats').classList.add('fs-5')
+    </script>
+{% endblock contain %}
