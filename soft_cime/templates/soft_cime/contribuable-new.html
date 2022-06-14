@@ -97,7 +97,7 @@ Contribuables
                         <div class="row justify-content-between text-left mb-3">
                             <div class="form-group col-sm-6 flex-column d-flex"> 
                                 <label class="form-control-label px-3" for="ug">Unité de gestion<span class="text-danger"> *</span></label> 
-                                <select id="ug" name="ug" class="form-control form-select">
+                                <select id="ug" name="ug" class="form-control form-select" onchange="change_ss()">
                                     <option value="" disabled selected>Choisissez le UG</option>
                                     {% for ug in ugs %}
                                     <option value="{{ug.ug}}">UG {{ug.ug}}</option> 
@@ -111,7 +111,7 @@ Contribuables
                                 <select id="sous_secteur" name="sous_secteur" class="form-control form-select">
                                     <option value="" disabled selected>Choisissez le Sous secteur</option>
                                     {% for sous_secteur in sous_secteurs %}
-                                        <option value="{{sous_secteur.libelle}}">{{sous_secteur.libelle}}</option> 
+                                        <option value="{{sous_secteur.libelle}}" class="ss_ug{{sous_secteur.ug.ug}} d-none" style="">{{sous_secteur.libelle}}</option> 
                                     {% endfor %}
                                 </select>
 
@@ -157,6 +157,17 @@ Contribuables
     <script>
         document.getElementById('contribuable').classList.add('fw-bold')
         document.getElementById('contribuable').classList.add('fs-5')
+
+        function change_ss(){
+            for(i=0;i<document.getElementById("sous_secteur").options.length;i++){
+                console.log(document.getElementById("sous_secteur").option[0].text)
+            }
+            
+            ug = document.getElementById("ug").selectedIndex
+            document.getElementsByClassName("ss_ug".concat(ug)).classList.remove("d-none")
+            console.log(ug)
+        }
+
     </script>
 
     

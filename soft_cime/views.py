@@ -81,9 +81,10 @@ def index(request):
     if request.user.is_authenticated:
         nbcontrib = contribuable.objects.count()
         personnel = Personnel.objects.get(user=request.user)
-        nbDec = Declaration.objects.count()
-        nbPaye =Payement.objects.count()
-        percent = 100/nbcontrib
+        nbDec = Declaration.objects.filter(Q(date_emission__month=today.month) and Q(date_emission__year=today.year)).count()
+        nbPaye =Payement.objects.filter(Q(date__month=today.month) and Q(date__year=today.year)).count()
+        nbAmr = AMR.objects.filter(Q(date__month=today.month) and Q(date__year=today.year)).count()
+        
         import random
         r = lambda: random.randint(0,255)
         couleur = []
@@ -120,7 +121,7 @@ def index(request):
             "nbDec" : nbDec,
             "nbPaye" : nbPaye,
             "nbdec_mois" : nbdec_mois,
-            "nbAmr" : AMR.objects.count(),
+            "nbAmr" : nbAmr,
             "mois" : mois[today.month],
             "today" : today,
             "ug_labels" : ug_labels,
@@ -180,6 +181,7 @@ def new_contribuable(request):
 
         
     message = " "
+    classmsg = ""
     if request.method == 'POST':
         NIU = request.POST.get('NIU')
         raison_social = request.POST.get('raison_social')
@@ -703,7 +705,7 @@ def excelStats1(request):
     wb.save(os.path.expanduser("~/Downloads/stats_contribuable.xlsx"))
     os.popen(os.path.expanduser("~/Downloads/stats_contribuable.xlsx"))
     
-    return redirect('stats1')
+    return redirect('stats_etats')
     
     
 def stats2(request):
@@ -714,10 +716,10 @@ def stats2(request):
     impots = Impot.objects.all()
     sous_secteurs = Sous_secteur.objects.all()
     
-    if request.method != "POST":
-        mois=today.month
-    else:
-        mois = request.POST.get("mois")
+    # if request.method != "POST":
+    #     mois=today.month
+    # else:
+    #     mois = request.POST.get("mois")
         
     montant_ug_im_alls = []
     
@@ -927,7 +929,211 @@ def stat_perf_recette(request):
     return render(request, "soft_cime/stats_perf_recette.html", context)
 
 
+def zeroifnone(x):
+    if x is None:
+        return 0
+    else:
+        return x
+    
+    
+def stats_consolide_irc(request, m):
+    
+    wb=load_workbook("soft_cime/static/doc/Statistiques Consolidées.xlsx")
+    ws = wb.active
+    
+    mois_stats = m
+    if m >= today.month:
+        an_stats = today.year - 1
+    else:
+        an_stats = today.year
+    # if today.month > 1 : 
+    #     mois_stats = today.month - 1
+    # else:
+    #     mois_stats = 12
+        
+    payements = Payement.objects.filter(Q(date__month = mois_stats) and Q(date__year = an_stats))
+    declaration = []
+    for payement in payements:
+        dec = Declaration.objects.filter(num_avis = payement.num_avis)
+        for d in dec:
+            declaration.append(d)
+            
+    amrs = AMR.objects.filter(date__month=mois_stats)
+        
+    j='B'
+    i=16
+    
+    #Traitements et salaires
+    ws[j+str(i)] = Impot.objects.get(Q(impot='IRPP') and Q(impot="SOLDE IRPP")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(Q(impot='IRPP') and Q(impot="SOLDE IRPP")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Revenus Foncier
+    j=chr(ord(j) - 1)
+    i=i+5
+    ws[j+str(i)] = Impot.objects.get(impot='RF').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='RF').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Revenus Capitaux Mobilier
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(impot='IRCM').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='IRCM').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Accompte Mensuel BIC
+    j=chr(ord(j) - 1)
+    i=i+2
+    ws[j+str(i)] = Impot.objects.get(Q(impot='AIR BIC') and Q(impot="SOLDE BIC")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(Q(impot='AIR BIC') and Q(impot="SOLDE BIC")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Accompte Mensuel BNC
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(Q(impot='AIR BNC') and Q(impot="SOLDE BNC")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(Q(impot='AIR BNC') and Q(impot="SOLDE BNC")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    
+    #TVA
+    j=chr(ord(j) - 1)
+    i=i+7
+    ws[j+str(i)] = Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Droits d'assise
+    j=chr(ord(j) - 1)
+    i=i+3
+    ws[j+str(i)] = Impot.objects.get(impot='ASSISE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='ASSISE').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Taxe de Séjour
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(impot='TAXE DE SEJOUR').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='TAXE DE SEJOUR').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    # Solde Impot sur les societés
+    j=chr(ord(j) - 1)
+    i=i+2
+    ws[j+str(i)] = Impot.objects.get(impot='SOLDE IS/IRCM').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='SOLDE IS/IRCM').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Accompte Mensuel
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(impot='IS').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='IS').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Accompte Loyer
+    j=chr(ord(j) - 1)
+    i=i+5
+    ws[j+str(i)] = Impot.objects.get(impot='PSI').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='PSI').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #Précompte achats
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(Q(impot='PSA') and Q(impot="SOLDE PSA")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(Q(impot='PSA') and Q(impot="SOLDE PSA")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    
+    #CAC TVA FEICOM
+    j=chr(ord(j) - 1)
+    i=i+8
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
+    
+    
+    #CAC TVA COMMUNE
+    j=chr(ord(j) - 1)
+    i=i+2
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC COM').taux
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC COM').taux
+    
+    
+    #CAC IRPP FEICOM
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IRPP') and Q(impot="SOLDE IRPP")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IRPP') and Q(impot="SOLDE IRPP")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
+    
+    
+    #CAC IRPP COMMUNE
+    j=chr(ord(j) - 1)
+    i=i+2
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IRPP') and Q(impot="SOLDE IRPP")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC COM').taux
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IRPP') and Q(impot="SOLDE IRPP")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC COM').taux
+            
+    
+    #CAC IS FEICOM
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IS') and Q(impot="SOLDE IS/IRCM")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IS') and Q(impot="SOLDE IS/IRCM")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
+    
+    
+    #CAC IS COMMUNE
+    j=chr(ord(j) - 1)
+    i=i+2
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IS') and Q(impot="SOLDE IS/IRCM")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC COM').taux
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='IS') and Q(impot="SOLDE IS/IRCM")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC COM').taux
+    
+    #CRTV
+    j=chr(ord(j) - 1)
+    i=i+5
+    ws[j+str(i)] = Impot.objects.get(impot='RAV').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='RAV').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #CCF
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(impot='CCF').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='CCF').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    #FNE
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(impot='FNE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='FNE').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    
+    
+    wb.save(os.path.expanduser("~/Downloads/Statistiques Consolidée Impôts sur le revenu.xlsx"))
+    os.popen(os.path.expanduser("~/Downloads/Statistiques Consolidée Impôts sur le revenu.xlsx"))
+    
+    return redirect('stats_etats')
 
+def stats_etats(request):
+    
+    if request.method == "POST":
+        num_m = int(request.POST.get("date"))
+    else : 
+        num_m = int(today.month)-1
+        
+        
+    context = {
+        "mois" : mois[num_m],
+        "num_m" : num_m,
+    }
+    return render(request, "soft_cime/stats_etats.html", context)
 
 
 # AMR

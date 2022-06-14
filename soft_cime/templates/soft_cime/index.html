@@ -67,11 +67,9 @@ Dashboard | SoftCIME
     </div>
     <div class="row mt-5">
         <div class="col-4 container bg-opacity-75 bg-white bg-gradient p-5 shadow">
-            <h5 class="text-center h3 small">REPARTITION PAR UG</h5>
             <canvas id="repartition_ug" ></canvas>
         </div>
         <div class="col-4 container bg-opacity-75 bg-white bg-gradient p-5 shadow">
-            <h5 class="text-center h3 small">REPARTITION PAR SOUS SECTEUR</h5>
             <canvas id="repartition_ss" ></canvas>
         </div>
         <div class="col-4 container bg-opacity-75 bg-white bg-gradient p-5 shadow">
@@ -102,27 +100,47 @@ Dashboard | SoftCIME
             datasets: [{
                 data: {{ ug_nbs|safe }},
                 backgroundColor: barColors,
-                label: 'REPARTITION PAR UG'
+                label: 'Data Source : Fiscalis'
             }],
             labels: {{ ug_labels|safe }}
             },
             options: {
-            responsive: true
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Repartition par unité de gestion'
+                    }
+                }
+                
             }
         };
 
         var config2 = {
-            type: 'bar',
+            type: 'pie',
             data: {
             datasets: [{
                 data: {{ ss_nbs|safe }},
                 backgroundColor: barColors,
-                label: 'REPARTITION PAR SS'
+                label: 'Data Source : Fiscalis'
             }],
             labels: {{ ss_labels|safe }}
             },
             options: {
-            responsive: true
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Repartition par sous secteur'
+                    }
+                }
+                
             }
         };
 
@@ -131,7 +149,7 @@ Dashboard | SoftCIME
             data: {
                 labels: {{labels_month|safe}},
                 datasets: [{
-                    label: 'DECLARATION PAR MOIS',
+                    label: 'Data Source : CIME',
                     data: {{ nbdec_mois|safe }},
                     backgroundColor: [
                         'rgba(255, 99, 132)',
@@ -172,7 +190,14 @@ Dashboard | SoftCIME
                     y: {
                       beginAtZero: true
                     }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Déclarations par mois'
+                    }
                 }
+                
             }
         };
 

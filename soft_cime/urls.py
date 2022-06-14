@@ -38,6 +38,8 @@ urlpatterns = [
     path('amr/<int:idAmr>', detail_amr, name='detail_amr'),
     path('amr/excel_amr/<int:idAmr>', excel_amr, name='excel_amr'),
     
+    path('statistiques/stats_consolide_irc/<int:m>', stats_consolide_irc, name='stats_consolide_irc'),
+    path('statistiques/stats_etats', stats_etats, name='stats_etats'),
     
     path('pdf/', GeneratePdf.as_view(), name='GeneratePdf'),
     
