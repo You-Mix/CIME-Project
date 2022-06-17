@@ -1207,9 +1207,9 @@ def stats_consolide_irc(request, m, y):
     #CCF
     j=chr(ord(j) - 1)
     i=i+1
-    ws[j+str(i)] = Impot.objects.get(impot='CCF').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    ws[j+str(i)] = Impot.objects.get(impot='CFC').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
     j=chr(ord(j) + 1)
-    ws[j+str(i)] = Impot.objects.get(impot='CCF').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
+    ws[j+str(i)] = Impot.objects.get(impot='CFC').impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
     
     #FNE
     j=chr(ord(j) - 1)
@@ -1220,7 +1220,7 @@ def stats_consolide_irc(request, m, y):
     
     
     wb.save(os.path.expanduser("~/Downloads/Statistiques Consolidée Impôts sur le revenu - " + mois[mois_stats] + ".xlsx"))
-    os.popen(os.path.expanduser("~/Downloads/Statistiques Consolidée Impôts sur le revenu - " + mois[mois_stats] + ".xlsx"))
+    os.popen(os.path.expanduser("~/Downloads/Statistiques Consolidée Impôts sur le revenu - " + mois[mois_stats] + " " + str(an_stats) +  ".xlsx"))
     
     return redirect('stats_etats')
 
@@ -1426,9 +1426,9 @@ def stats_consolide_retc(request, m, y):
     #TAV COM
     j=chr(ord(j) - 1)
     i=i+2
-    ws[j+str(i)] = zeroifnone(Impot.objects.get(impot='TAV COM').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum'])
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(impot='TAV').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='TAV COM').taux
     j=chr(ord(j) + 1)
-    ws[j+str(i)] = zeroifnone(Impot.objects.get(impot='TAV COM').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])
+    ws[j+str(i)] = zeroifnone(Impot.objects.get(impot='TAV').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='TAV COM').taux
     
     #MONTANT IMPOTS BUDGETAIRE ET NON BUDGETAIRE
     i=i+8
@@ -1438,8 +1438,8 @@ def stats_consolide_retc(request, m, y):
     
     
     
-    wb.save(os.path.expanduser("~/Downloads/Statistiques Consolidée Recettes d'enregistrement - " + mois[mois_stats] + " " + an_stats +  ".xlsx"))
-    os.popen(os.path.expanduser("~/Downloads/Statistiques Consolidée Recettes d'enregistrement - " + mois[mois_stats] + " " + an_stats +  ".xlsx"))
+    wb.save(os.path.expanduser("~/Downloads/Statistiques Consolidée Recettes d'enregistrement - " + mois[mois_stats] + " " + str(an_stats) +  ".xlsx"))
+    os.popen(os.path.expanduser("~/Downloads/Statistiques Consolidée Recettes d'enregistrement - " + mois[mois_stats] + " " + str(an_stats) +  ".xlsx"))
     
     return redirect('stats_etats')
 
