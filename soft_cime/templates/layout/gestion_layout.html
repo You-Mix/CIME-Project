@@ -1,0 +1,34 @@
+{% extends "layout/base.html" %}
+
+{% block title %}
+Gestion | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Gestion et suivi
+{% endblock titleSide %}
+
+
+{% block liSide %}
+<li class="nav-item">
+    <a href="{% url 'liste_declaration' %}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Déclarations</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{%url 'new_declaration'%}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Nouvelle Déclaration</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{% url 'declaration_incomplete' %}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Déclarations incomplete</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="#" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-pen-fill"></i> <span class="ms-1 d-none d-sm-inline">Plan d'action</span>
+    </a>
+</li>
+
+{% endblock liSide %}

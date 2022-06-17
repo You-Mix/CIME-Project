@@ -1,26 +1,6 @@
-{% extends "layout/base.html" %}
+{% extends "layout/contrib_layout.html" %}
 
-{% block title %}
-Contribuables | SoftCIME
-{% endblock title %}
 
-{% block titleSide %}
-Contribuables
-{% endblock titleSide %}
-
-{% block liSide %}
-    <li class="nav-item">
-        <a href="{% url 'liste_contribuable' %}" class="nav-link align-middle px-0 text-white fw-bold">
-            <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Liste</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a href="{% url 'new_contribuable' %}" class="nav-link align-middle px-0 text-white-50">
-            <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Nouveau</span>
-        </a>
-    </li>
-
-{% endblock liSide %}
 
 {% block contain %}
     <h4 class="bg-success text-white text-center">{{nbContrib}} Contribuables</h4>
@@ -72,5 +52,8 @@ Contribuables
     <script>
         document.getElementById('contribuable').classList.add('fw-bold')
         document.getElementById('contribuable').classList.add('fs-5')
+        document.getElementById('menu').children[0].children[0].classList.add('text-white')
+        document.getElementById('menu').children[0].children[0].classList.add('fw-bold')
+        document.getElementById('menu').children[0].children[0].classList.remove('text-white-50')
     </script>
 {% endblock contain %}

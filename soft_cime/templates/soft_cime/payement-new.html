@@ -1,31 +1,6 @@
-{% extends "layout/base.html" %}
+{% extends "layout/payement_layout.html" %}
 
-{% block title %}
-Recettes | SoftCIME
-{% endblock title %}
 
-{% block titleSide %}
-Recettes
-{% endblock titleSide %}
-
-{% block liSide %}
-<li class="nav-item">
-    <a href="{% url 'liste_payements' %}" class="nav-link align-middle px-0 text-white-50">
-        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Historique Payement</span>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="{%url 'new_payement'%}" class="nav-link align-middle px-0 text-white fw-bold">
-        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Nouveau Payement</span>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="{% url 'paye_non_declare' %}" class="nav-link align-middle px-0 text-white-50 ">
-        <i class="bi bi-cash-coin"></i> <span class="ms-1 d-none d-sm-inline">Payement Non Déclarés</span>
-    </a>
-</li>
-
-{% endblock liSide %}
 
 {% block contain %}
 <div class="container-fluid px-1 py-5 mx-auto">
@@ -38,8 +13,8 @@ Recettes
             
                     <div class="row justify-content-between mb-3 ">
                         <div class="form-group col-sm-6 flex-column d-flex"> 
-                            <label class="form-control-label px-3" for="num_avis">Avis d'imposition<span class="text-danger"> *</span></label> 
-                            <input type="text" class="form-control" id="num_avis" name="num_avis" placeholder="Entrer le N° Avis" list="liste-num_avis">
+                            <label class="form-control-label px-3" for="num_avis">Avis d'imposition</label> 
+                            <input type="text" class="form-control" id="num_avis" name="num_avis" placeholder="Entrer le n° d'avis" list="liste-num_avis">
                             <datalist id="liste-num_avis">
                                 {% for declaration in declarations %}
                                 <option value="{{declaration.num_avis}}">{{declaration.num_avis}}</option> 
@@ -59,12 +34,26 @@ Recettes
                     </div>
                     <div class="row justify-content-between text-left mb-3">
                         <div class="form-group col-sm-6 flex-column d-flex"> 
-                            <label class="form-control-label px-3" for="montant">Montant<span class="text-danger"> *</span></label> 
+                            <label class="form-control-label px-3" for="num_vir">Numéro Virement<span class="text-danger"> *</span></label> 
+                            <input type="number" id="num_vir" name="num_vir" class="form-control" placeholder="Entrez le n° de virement" required> 
+                        </div>
+                        <div class="form-group col-sm-6 flex-column d-flex"> 
+                            <label class="form-control-label px-3" for="date_vir">Date Virement<span class="text-danger"> *</span></label> 
+                            <input type="date" id="date_vir" name="date_vir" class="form-control" value="{{today.year}}-{% if today.month < 10 %}0{% endif %}{{today.month}}-{% if today.day < 10 %}0{% endif %}{{today.day}}" required> 
+                        </div>
+                        
+                    </div>
+                    <div class="row justify-content-between text-left mb-3">
+                        <div class="form-group col-sm-6 flex-column d-flex"> 
+                            <label class="form-control-label px-3" for="montant">Montant viré<span class="text-danger"> *</span></label> 
                             <input type="number" id="montant" name="montant" class="form-control" placeholder="chiffre_affaire" required> 
                         </div>
                         <div class="form-group col-sm-6 flex-column d-flex"> 
-                            <label class="form-control-label px-3" for="date">Date<span class="text-danger"> *</span></label> 
-                            <input type="date" id="date" name="date" class="form-control" value="{{today.year}}-{% if today.month < 10 %}0{% endif %}{{today.month}}-{% if today.month < 10 %}0{% endif %}{{today.day}}" required> 
+                            <label class="form-control-label px-3" for="etat">Etat<span class="text-danger"> *</span></label> 
+                            <select id="etat" name="etat" class="form-select">
+                                <option value="Comptabilisé" selected>Comptabilisé</option>
+                                <option value="Non Comptabilisé">Non Comptabilisé</option>
+                            </select>
                         </div>
                         
                     </div>
@@ -86,6 +75,10 @@ Recettes
 <script>
     document.getElementById('recette').classList.add('fw-bold')
     document.getElementById('recette').classList.add('fs-5')
+    
+    document.getElementById('menu').children[1].children[0].classList.add('text-white')
+    document.getElementById('menu').children[1].children[0].classList.add('fw-bold')
+    document.getElementById('menu').children[1].children[0].classList.remove('text-white-50')
 
     $(function(){                   
         $('#contribuable').autocomplete();

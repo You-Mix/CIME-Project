@@ -1,0 +1,33 @@
+{% extends "layout/base.html" %}
+
+{% block title %}
+Statistiques | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Statistiques
+{% endblock titleSide %}
+
+{% block liSide %}
+    <li class="nav-item">
+        <a href="{% url 'stats1' %}" class="nav-link align-middle px-0 text-white-50">
+            <i class="bi bi-table"></i> <span class="ms-1 d-none d-sm-inline">Stats Contribuable</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'stats2' %}" class="nav-link align-middle px-0 text-white-50" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
+            <i class="bi bi-graph-up-arrow collapsed"></i> <span class="ms-1 d-none d-sm-inline">Performance</span>
+        </a>
+        <ul class="list-unstyled fw-normal pb-1 small card-subtitle" id="subperf">
+            <li><a href="{%url 'stats2'%}" class="nav-link text-white-50"><i class="bi bi-star-fill"></i> Cellule Gestion</a></li>
+            <li><a href="{%url 'stat_perf_recette'%}" class="nav-link text-white-50"><i class="bi bi-star-fill"></i> Recette</a></li>
+        </ul>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'stats_etats' %}" class="nav-link align-middle px-0 text-white-50">
+            <i class="bi bi-filetype-xlsx"></i> <span class="ms-1 d-none d-sm-inline">Etats Statistiques</span>
+        </a>
+    </li>
+
+{% endblock liSide %}
+

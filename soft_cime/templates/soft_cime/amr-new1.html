@@ -1,31 +1,5 @@
-{% extends "layout/base.html" %}
+{% extends "layout/amr_layout.html" %}
 
-
-{% block title %}
-AMR | SoftCIME
-{% endblock title %}
-
-{% block titleSide %}
-Avis de Mise en Recouvrement
-{% endblock titleSide %}
-
-{% block liSide %}
-<li class="nav-item">
-    <a href="{% url 'liste_amr' %}" class="nav-link align-middle px-0 text-white-50">
-        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Historique AMR</span>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="{%url 'new_amr'%}" class="nav-link align-middle px-0 text-white">
-        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Enregistrer un AMR</span>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="{%url 'amr_incomplet'%}" class="nav-link align-middle px-0 text-white-50 ">
-        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">AMR Incomplets</span>
-    </a>
-</li>
-{% endblock liSide %}
 
 {% block contain %}
 <div class="container-fluid px-1 py-5 mx-auto">
@@ -67,7 +41,40 @@ Avis de Mise en Recouvrement
                 </form>
                 <h5 class="card-footer {{classmsg}}">{{message}}</h5>
             </div>
+            <div class="row">
+                {% comment %} <i class="text-center text-uppercase">Impots Déclarés</i> {% endcomment %}
+                <table class="table table-responsive small">
+    
+                    <thead >
+                        <th>impots</th>
+                        <th>Montant pricipal</th>
+                        <th>Montant budgétaire</th>
+                        <th>Repartition</th>
+                    </thead>
+                    <tbody>
+                        {% for impot in impots_amr %}
+                            <tr>
+                                <td>
+                                    {{impot.impot}}
+                                </td>
+                                <td>
+                                    {{impot.montant}}
+                                </td>
+                                <td>
+                                    {{impot.montant_budg}}
+                                </td>
+                                <td>
+                                    {% for part_impot in impot.impot.parts_impot.all %}
+                                        {{part_impot.nom}} : {% widthratio part_impot.taux 1 impot.montant %}<br>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}  
+                    </tbody>
+                </table>
+            </div>
         </div>
+        
     </div>
 </div>   
 
@@ -77,6 +84,7 @@ Avis de Mise en Recouvrement
     <script>
         document.getElementById('amr').classList.add('fw-bold')
         document.getElementById('amr').classList.add('fs-5')
-       
+        document.getElementById('menu').children[1].children[0].classList.add('text-white')
+        document.getElementById('menu').children[1].children[0].classList.remove('text-white-50')
     </script>
 {% endblock contain %}

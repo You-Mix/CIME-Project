@@ -138,6 +138,7 @@ class Impot(models.Model):
      )
      type_impot = models.CharField(max_length=30, choices=TYPE_IMPOT)
      parts_impot = models.ManyToManyField(Part_Impot)
+     impot_nom = models.CharField(max_length=200, null=True)
      
      def __str__(self):
           return self.impot
@@ -159,6 +160,9 @@ class Declaration(models.Model):
      date_emission = models.DateTimeField(auto_now=True)
      personnel = models.ForeignKey(Personnel, on_delete=models.CASCADE)
 
+     def __str__(self):
+          return "Déclaration de l'avis N° " + str(self.num_avis)
+     
      def monnaieCA(self):
           s = "{:,}".format(self.chiffre_affaire).replace(',', ' ')
           return s
@@ -189,7 +193,16 @@ class Payement(models.Model):
      num_avis = models.PositiveIntegerField(null=True)   
      personnel = models.ForeignKey(Personnel, on_delete=models.CASCADE)
      contribuable = models.ForeignKey(contribuable, on_delete=models.CASCADE)
+     date_virement = models.DateField(null=True)
+     num_virement = models.PositiveBigIntegerField(null=True) 
+     ETAT = (
+          ("Comptabilisé" , "Comptabilisé"),
+          ("Non Comptabilisé" , "Non Comptabilisé")
+     )
+     etat = models.CharField(max_length=30, choices=ETAT, null=True)
      
+     def __str__(self):
+          return "Payement de l'avis N° " + str(self.num_avis)
 
 ########################################################################
 #                            CLASSE AMR                                #

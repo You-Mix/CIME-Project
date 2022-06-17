@@ -1,0 +1,29 @@
+{% extends "layout/base.html" %}
+
+{% block title %}
+Recettes | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Recettes
+{% endblock titleSide %}
+
+{% block liSide %}
+    <li class="nav-item">
+        <a href="{% url 'liste_payements' %}" class="nav-link align-middle px-0 text-white-50">
+            <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Historique Payement</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{%url 'new_payement'%}" class="nav-link align-middle px-0 text-white-50">
+            <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Nouveau Payement</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'paye_non_declare' %}" class="nav-link align-middle px-0 text-white-50">
+            <i class="bi bi-cash-coin"></i> <span class="ms-1 d-none d-sm-inline">Payements Non Déclarés</span><sup class="text-danger">({{nb_paye_non}})</sup>
+        </a>
+    </li>
+
+{% endblock liSide %}
+

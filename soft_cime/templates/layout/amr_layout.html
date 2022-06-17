@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+
+
+{% block title %}
+AMR | SoftCIME
+{% endblock title %}
+
+{% block titleSide %}
+Avis de Mise en Recouvrement
+{% endblock titleSide %}
+
+{% block liSide %}
+<li class="nav-item">
+    <a href="{% url 'liste_amr' %}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Historique AMR</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{%url 'new_amr'%}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Enregistrer un AMR</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{%url 'amr_incomplet'%}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">AMR Incomplets</span></span><sup class="text-danger">({% block nb_amr_in %}{{nb_amr_in}}{% endblock %})</sup>
+    </a>
+</li>
+{% endblock liSide %}
+    
+
+    

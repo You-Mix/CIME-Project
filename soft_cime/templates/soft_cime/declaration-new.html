@@ -1,37 +1,5 @@
-{% extends "layout/base.html" %}
+{% extends "layout/gestion_layout.html" %}
 
-
-{% block title %}
-Gestion | SoftCIME
-{% endblock title %}
-
-{% block titleSide %}
-Gestion et suivi
-{% endblock titleSide %}
-
-{% block liSide %}
-<li class="nav-item">
-    <a href="{% url 'liste_declaration' %}" class="nav-link align-middle px-0 text-white-50">
-        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Déclarations</span>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="{%url 'new_declaration'%}" class="nav-link align-middle px-0 text-white fw-bold">
-        <i class="bi bi-plus-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">Nouvelle Déclaration</span>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="{% url 'declaration_incomplete' %}" class="nav-link align-middle px-0 text-white-50">
-        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Déclarations incomplete</span>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="#" class="nav-link align-middle px-0 text-white-50">
-        <i class="bi bi-pen-fill"></i> <span class="ms-1 d-none d-sm-inline">Plan d'action</span>
-    </a>
-</li>
-
-{% endblock liSide %}
 
 {% block contain %}
 <div class="container-fluid px-1 py-5 mx-auto">
@@ -44,7 +12,7 @@ Gestion et suivi
                     <div class="row justify-content-between mb-3 ">
                         <div class="form-group col-sm-6 flex-column d-flex"> 
                             <label class="form-control-label px-3" for="num_avis">Avis d'imposition<span class="text-danger"> *</span></label> 
-                            <input type="text" id="num_avis" name="num_avis" class="form-control" placeholder="N° Avis" required> 
+                            <input type="text" id="num_avis" name="num_avis" class="form-control" placeholder="N° Avis" value="{{payement.num_avis}}" required> 
                         </div>
                         <div class="form-group col-sm-6 flex-column d-flex"> 
                             <label class="form-control-label px-3" for="contribuable">Contribuable<span class="text-danger"> *</span></label> 
@@ -54,7 +22,7 @@ Gestion et suivi
                                 <option value="{{contribuable.NIU}}">{{contribuable.NIU}}</option> 
                                 {% endfor %}
                             </select> {% endcomment %}
-                            <input type="text" class="form-control" id="contribuable" name="contribuable" placeholder="Entrer le NIU" list="liste-contribuable" >
+                            <input type="text" class="form-control" id="contribuable" name="contribuable" placeholder="Entrer le NIU" list="liste-contribuable" value="{{payement.contribuable.NIU}}">
                             <datalist id="liste-contribuable">
                                 {% for contribuable in contribuables %}
                                 <option value="{{contribuable.NIU}}">{{contribuable.NIU}}</option> 
@@ -94,6 +62,9 @@ Gestion et suivi
     <script>
         document.getElementById('gestion').classList.add('fw-bold')
         document.getElementById('gestion').classList.add('fs-5')
+        document.getElementById('menu').children[1].children[0].classList.add('text-white')
+        document.getElementById('menu').children[1].children[0].classList.add('fw-bold')
+        document.getElementById('menu').children[1].children[0].classList.remove('text-white-50')
         $(function(){              
             $('#contribuable').autocomplete();
         });

@@ -19,6 +19,7 @@ urlpatterns = [
     path('gestion/declaration_incomplete/', declaration_incomplete, name='declaration_incomplete'),
     path('gestion/update_declaration/<int:idDec>', update_declaration, name='update_declaration'),
     path('gestion/excel_declaration/<int:idDec>', excel_declaration, name='excel_declaration'),
+    path('gestion/new_declaration/<int:idPaye>', new_declaration1, name='new_declaration1'),
     
     path('recette/', liste_payements, name='liste_payements'),
     path('recette/new_payement', new_payement, name='new_payement'),
@@ -38,11 +39,12 @@ urlpatterns = [
     path('amr/<int:idAmr>', detail_amr, name='detail_amr'),
     path('amr/excel_amr/<int:idAmr>', excel_amr, name='excel_amr'),
     
-    path('statistiques/stats_consolide_irc/<int:m>', stats_consolide_irc, name='stats_consolide_irc'),
+    
     path('statistiques/stats_etats', stats_etats, name='stats_etats'),
-    
-    path('pdf/', GeneratePdf.as_view(), name='GeneratePdf'),
-    
+    path('statistiques/stats_consolide_irc/<int:m>/<int:y>', stats_consolide_irc, name='stats_consolide_irc'),
+    path('statistiques/stats_consolide_retc/<int:m>/<int:y>', stats_consolide_retc, name='stats_consolide_retc'),
+    path('statistiques/etats_virements/<int:m>/<int:y>', excel_virements, name='excel_virements'),
+    path('statistiques/recette_affectees/<int:m>/<int:y>', stats_recette_af, name='stats_recette_af'),    
     
 
     
