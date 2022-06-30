@@ -1,0 +1,178 @@
+{% extends "layout/gestion_layout.html" %}
+
+{% block title %}
+Projections
+{% endblock title %}
+
+{% block contain %}
+<div class="container-fluid px-1 py-5 mx-auto">
+    <div class="row d-flex justify-content-center p-4 shadow">
+        <div class="col-8">
+            <canvas id="chart_project_mois"></canvas>
+        </div>
+        <div class="col-4 d-flex align-items-center p-5 flex-column">
+            <a href="{% url 'new_projection_contrib' %}" class="btn btn-success m-5 text-uppercase"> Nouvelle Projection Contribuable</a> <br>
+            <a href="{% url 'new_projection_impot' %}" class="btn btn-success m-5 text-uppercase"> Nouvelle Projection Impot</a>
+        </div>
+    </div>
+    <div class="row d-flex justify-content-center bg-light">
+        <form method="POST" class="row justify-content-center bg-light">
+            {% csrf_token %}
+            <div class="col-2">
+                <select class="form-select inp" name="date">
+                    <option value="1" {% if num_m == 1 %}selected{% endif %}>Janvier</option>
+                    <option value="2" {% if num_m == 2 %}selected{% endif %}>Février</option>
+                    <option value="3" {% if num_m == 3 %}selected{% endif %}>Mars</option>
+                    <option value="4" {% if num_m == 4 %}selected{% endif %}>Avril</option>
+                    <option value="5" {% if num_m == 5 %}selected{% endif %}>Mai</option>
+                    <option value="6" {% if num_m == 6 %}selected{% endif %}>Juin</option>
+                    <option value="7" {% if num_m == 7 %}selected{% endif %}>Juillet</option>
+                    <option value="8" {% if num_m == 8 %}selected{% endif %}>Août</option>
+                    <option value="9" {% if num_m == 9 %}selected{% endif %}>Septembre</option>
+                    <option value="10" {% if num_m == 10 %}selected{% endif %}>Octobre</option>
+                    <option value="11" {% if num_m == 11 %}selected{% endif %}>Novembre</option>
+                    <option value="12" {% if num_m == 12 %}selected{% endif %}>Décembre</option>
+                </select>
+            </div>
+            <div class="col-2">
+                <select class="form-select inp" name="an">
+                    {% for an in range_an %}
+                    <option value="{{an}}" {% if an == ans %}selected{% endif %}>{{an}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-1">
+                <input type="submit" value="Générer" class="btn btn-success inp">
+            </div>
+        </form>
+
+        <div class="col-6 d-flex align-items-center flex-column p-3 overflow-auto" style="max-height:500px;">
+            <table class="table table-hover small">
+                <caption align="top" class="text-uppercase">Historique Projection Contribuables</caption>
+                <thead class="text-uppercase">
+                    <tr>
+                        <th>Contribuable</th>
+                        <th>Mois</th>
+                        <th>Montant</th>
+                        <th>Cellule</th>
+                        <th>émis par</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projections %}
+                    <tr>
+                        <th>
+                            <a href="{% url 'detail_contrib' project.contribuable.id %}" class="text-decoration-none">
+                                {{project.contribuable.raison_social}}
+                            <i class="bi bi-info"></i></a>
+                        </th>
+                        <th>{{mois}}</th>
+                        <th>{{project.montant}}</th>
+                        <th>{{project.cellule}}</th>
+                        <th>{{project.personnel}}</th>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-6 d-flex align-items-center flex-column p-3 overflow-auto" style="max-height:500px;">
+            <table class="table table-hover small">
+                <caption align="top" class="text-uppercase">Historique Projection Impots</caption>
+                <thead class="text-uppercase">
+                    <tr>
+                        <th>Impot</th>
+                        <th>Mois</th>
+                        <th>Montant</th>
+                        <th>émis par</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projections_impots %}
+                    <tr>
+                        <th>{{project.impot}}</th>
+                        <th>{{mois}}</th>
+                        <th>{{project.montant}}</th>
+                        <th>{{project.personnel}}</th>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>   
+
+
+
+<style>
+    .inp {
+        border:none;
+        border-bottom: 1px solid darkgreen;
+        padding: 5px 10px;
+        margin:none;
+        outline: none;
+     }
+    
+
+</style>
+
+    <script>
+        document.getElementById('gestion').classList.add('fw-bold')
+        document.getElementById('gestion').classList.add('fs-5')
+        document.getElementById('menu').children[3].children[0].classList.add('text-white')
+        document.getElementById('menu').children[3].children[0].classList.add('fw-bold')
+        document.getElementById('menu').children[3].children[0].classList.remove('text-white-50')
+
+
+        var config1 = {
+            type: 'line',
+            data: {
+                labels: {{labels_month|safe}},
+                datasets: [
+                    {
+                        label: 'Objectifs',
+                        data: {{ montant_project_mois|safe }},
+                        borderColor: [
+                            'rgb(60, 100, 235)'
+                            ],
+                    },
+                    {
+                        label: 'Réalisations',
+                        data: {{ montant_paye_mois|safe }},
+                        borderColor: [
+                            'rgb(120, 50, 118)'
+                            ],
+                    }
+                    
+                
+                ],
+                borderWidth: 1
+                
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Objectifs et Réalisations par mois'
+                    }
+                }
+                
+            }
+        };
+
+        
+
+        window.onload = function() {
+            var ctx1 = document.getElementById('chart_project_mois').getContext('2d');
+            window.myLine = new Chart(ctx1, config1);
+
+
+        };
+    </script>
+       
+{% endblock contain %}

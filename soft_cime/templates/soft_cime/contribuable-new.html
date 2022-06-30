@@ -1,6 +1,8 @@
 {% extends "layout/contrib_layout.html" %}
 
-
+{% block title %}
+Nouveau contribuable
+{% endblock title %}
 
 {% block contain %}
     
@@ -92,7 +94,7 @@
                                 <select id="sous_secteur" name="sous_secteur" class="form-control form-select">
                                     <option value="" disabled selected>Choisissez le Sous secteur</option>
                                     {% for sous_secteur in sous_secteurs %}
-                                        <option value="{{sous_secteur.libelle}}" class="ss_ug{{sous_secteur.ug.ug}} d-none" style="">{{sous_secteur.libelle}}</option> 
+                                        <option value="{{sous_secteur.libelle}}" id="{{sous_secteur.ug.ug}} d-none" style="">{{sous_secteur.libelle}}</option> 
                                     {% endfor %}
                                 </select>
 
@@ -138,17 +140,15 @@
     <script>
         document.getElementById('contribuable').classList.add('fw-bold')
         document.getElementById('contribuable').classList.add('fs-5')
-        document.getElementById('menu').children[0].children[0].classList.add('text-white')
-        document.getElementById('menu').children[0].children[0].classList.add('fw-bold')
-        document.getElementById('menu').children[0].children[0].classList.remove('text-white-50')
+        document.getElementById('menu').children[1].children[0].classList.add('text-white')
+        document.getElementById('menu').children[1].children[0].classList.add('fw-bold')
+        document.getElementById('menu').children[1].children[0].classList.remove('text-white-50')
         function change_ss(){
-            for(i=0;i<document.getElementById("sous_secteur").options.length;i++){
-                console.log(document.getElementById("sous_secteur").option[0].text)
-            }
             
-            ug = document.getElementById("ug").selectedIndex
-            document.getElementsByClassName("ss_ug".concat(ug)).classList.remove("d-none")
+            ug = document.getElementById("ug").value
             console.log(ug)
+            document.getElementById(ug).classList.remove("d-none")
+            
         }
 
     </script>

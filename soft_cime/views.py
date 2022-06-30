@@ -17,7 +17,6 @@ from .models import *
 from soft_cime.utils import render_to_pdf
 from django.views.generic import View
 import matplotlib.pyplot as plt
-import urllib, base64
 import numpy as np
 import io
 # from .form import *
@@ -110,11 +109,38 @@ def index(request):
             
         nbdec_mois = []
         labels_month = []
-        for i in range(1, 13):
-            nbdec_mois.append(Declaration.objects.filter(date_emission__month=i).count())
-            labels_month.append(mois[i])
-            
         
+        j=[]
+        tom = today.month
+        
+        for i in range(4,-1,-1):
+            if tom-i>0:
+                j.append(tom-i)
+            else:
+                j.append(tom-i+12)
+                    
+        for i in j:
+            if i > today.month:
+                nbDec1 = Declaration.objects.filter(date_emission__month=i).filter(date_emission__year=today.year-1).count()
+            else:
+                nbDec1 = Declaration.objects.filter(date_emission__month=i).filter(date_emission__year=today.year).count()
+                
+            nbdec_mois.append(nbDec1)
+            labels_month.append(mois[i])
+        
+        nbpaye_mois = []
+        for i in j:
+            if i > today.month:
+                nbpaye_mois.append(Payement.objects.filter(date__month=i).filter(date__year=today.year-1).count())
+            else:
+                nbpaye_mois.append(Payement.objects.filter(date__month=i).filter(date__year=today.year).count())
+            
+        nbamr_mois = []
+        for i in j:
+            if i > today.month:
+                nbamr_mois.append(AMR.objects.filter(date__month=i).filter(date__year=today.year-1).count())
+            else:
+                nbamr_mois.append(AMR.objects.filter(date__month=i).filter(date__year=today.year).count())
         
         
         context = {
@@ -132,6 +158,8 @@ def index(request):
             "ss_labels" : ss_labels,
             "ss_nbs" : ss_nbs,
             "couleur_ss" : couleur_ss,
+            "nbpaye_mois" : nbpaye_mois,
+            "nbamr_mois" : nbamr_mois,
         }
         return render(request, "soft_cime/index.html", context)
     else:
@@ -261,14 +289,43 @@ def detail_contribuable(request,id):
         
         
     # total_dec=Impot_Declare.objects.filter(declaration in declarations).aggregate(sum('montant'))
+    j=[]
+    tom = today.month
+    
+    for i in range(4,-1,-1):
+        if tom-i>0:
+            j.append(tom-i)
+        else:
+            j.append(tom-i+12)
+    
+    nbpaye_mois = []
+    objectif_mois = []
+    labels_month = []
+    
+    for i in j:
+        if i > today.month:
+            paye = Payement.objects.filter(contribuable=contrib).filter(date_virement__month = i).filter(date_virement__year = today.year-1).aggregate(Sum('montant'))['montant__sum']
+            nbpaye_mois.append(zeroifnone(paye))
+        else:
+            paye = Payement.objects.filter(contribuable=contrib).filter(date_virement__month = i).filter(date_virement__year = today.year).aggregate(Sum('montant'))['montant__sum']
+            nbpaye_mois.append(zeroifnone(paye))   
+                
+        obj = Projection.objects.filter(contribuable__id = id).filter(date__month = i).filter(date__year = today.year).aggregate(Sum('montant'))['montant__sum']
+        objectif_mois.append(zeroifnone(obj))
+        labels_month.append(mois[i])
         
+    print(objectif_mois)    
     payements = Payement.objects.filter(contribuable=contrib)
+    
     context = {
         'contribuable' : contrib,
         'declarations_infos' : declarations_infos,
         'payements' : payements,
         'declarations' : declarations,
         'amr_infos' : amr_infos,
+        'nbpaye_mois' : nbpaye_mois,
+        'labels_month' : labels_month,
+        "objectif_mois" : objectif_mois,
     }
     
     
@@ -289,6 +346,7 @@ def liste_declaration(request):
         'declarations' : declaration_history,
         'nbdeclaration' : nbdeclaration,
         'impots_declare' : impots_declare,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
     }
     
     
@@ -307,6 +365,7 @@ def declaration_incomplete(request):
         'declarations' : declaration_history,
         'nbdeclaration' : nbdeclaration,
         'impots_declare' : impots_declare,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
     }
     
     
@@ -344,6 +403,7 @@ def new_declaration(request):
         'today':today,
         'message' : message,
         'classmsg' : classmsg,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
     }
     return render(request, "soft_cime/declaration-new.html", context)
 
@@ -380,6 +440,7 @@ def new_declaration1(request,idPaye):
         'message' : message,
         'classmsg' : classmsg,
         'payement' : payement,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
         
     }
     return render(request, "soft_cime/declaration-new.html", context)
@@ -395,6 +456,7 @@ def update_declaration(request, idDec):
         'contribuables' : contribuables,
         'declaration':declaration,
         'today':today,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
     }
     
     if request.method == 'POST':
@@ -422,23 +484,42 @@ def new_declaration_impots(request, idDec):
     message=""
     classmsg = ""
     if request.method == "POST":
-        montant = request.POST.get("montant")
-        impot = Impot.objects.get(impot=request.POST.get('impot'))
-        exist = Impot_Declare.objects.filter(impot=impot) & Impot_Declare.objects.filter(declaration=declaration)
-        if len(exist) == 0:
-            newImpotDec = Impot_Declare.objects.create(declaration=declaration, impot=impot, montant=montant)
-            newImpotDec.save()
-            message = "Enregistré"
-            classmsg = "text-success"
+        imp = Impot.objects.filter(impot=request.POST.get('impot'))
+        if len(imp) != 0:
+            montant = request.POST.get("montant")
+            impot = Impot.objects.get(impot=request.POST.get('impot'))
+            exist = Impot_Declare.objects.filter(impot=impot) & Impot_Declare.objects.filter(declaration=declaration)
+            if len(exist) == 0:
+                newImpotDec = Impot_Declare.objects.create(declaration=declaration, impot=impot, montant=montant)
+                newImpotDec.save()
+                message = "Enregistré"
+                classmsg = "text-success"
+            else:
+                message = "Impot Déjà Déclaré"
+                classmsg = "text-danger"
         else:
-            message = "Impot Déjà Déclaré"
+            message = "Veuillez choisir l'impôt"
             classmsg = "text-danger"
+    
+    im_dec = []
+    for impot in impots_declares:
+        line = []
+        line.append(impot.impot)
+        line.append(impot.montant)
+        repart = []
+        for part in impot.impot.parts_impot.all():
+            repart.append(part.nom + " : " + str(part.montant(impot.montant)))
             
+        line.append(repart)
+        im_dec.append(line)
+        
+                
     context = {
         'impots':impots,
         "message":message,
         "classmsg" : classmsg,
-        'impots_declares' : impots_declares,
+        'im_dec' : im_dec,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
     }
     return render(request, "soft_cime/declaration-new1.html", context)
 
@@ -455,11 +536,26 @@ def detail_declaration(request,idDec):
         for p in payement:
             if p.contribuable == declaration.contribuable:
                 statut = "Payé (enregistré le " + str(p.date) + ")"
+    
+    
+    im_dec = []
+    for impot in impots_declares:
+        line = []
+        line.append(impot.impot)
+        line.append(impot.montant)
+        repart = []
+        for part in impot.impot.parts_impot.all():
+            repart.append(part.nom + " : " + str(part.montant(impot.montant)))
         
+        line.append(repart)
+        im_dec.append(line)
+            
     context = {
         'declaration' : declaration,
         'impots_declares' : impots_declares,
         'statut' : statut,
+        "im_dec" : im_dec,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
     }
     
     
@@ -508,6 +604,361 @@ def excel_declaration(request,idDec):
     os.popen(os.path.expanduser("~/Downloads/Déclaration " + str(declaration.num_avis) + ".xlsx"))
     
     return redirect("detail_declaration", idDec)
+
+
+# PROJECTION
+
+@login_required
+def projections(request):
+    
+    if request.method == "POST":
+        num_m = int(request.POST.get("date"))
+        an = int(request.POST.get("an"))
+    else : 
+        num_m = int(today.month)
+        an = today.year
+    
+    projections = Projection.objects.filter(date__month = num_m).filter(date__year = an).order_by('-id')
+    projections_impots = Projection_Impot.objects.filter(date__month = num_m).filter(date__year = an).order_by('-id')
+    
+    j=[]
+    tom = today.month
+    
+    for i in range(4,-1,-1):
+        if tom-i>0:
+            j.append(tom-i)
+        else:
+            j.append(tom-i+12)
+    
+    
+    labels_month = []
+    
+        
+    montant_paye_mois = []
+    for i in j:
+        if i > today.month:
+            montant_paye_mois.append(zeroifnone(Payement.objects.filter(date__month=i).filter(date__year=today.year-1).aggregate(Sum('montant'))['montant__sum']))
+        else:
+            montant_paye_mois.append(zeroifnone(Payement.objects.filter(date__month=i).filter(date__year=today.year).aggregate(Sum('montant'))['montant__sum']))
+        
+        labels_month.append(mois[i])
+    
+    montant_project_mois = []
+    for i in j:
+        if i > today.month:
+            montant_project_mois.append(zeroifnone(Projection.objects.filter(date__month=i).filter(date__year=today.year-1).aggregate(Sum('montant'))['montant__sum']))
+        else:
+            montant_project_mois.append(zeroifnone(Projection.objects.filter(date__month=i).filter(date__year=today.year).aggregate(Sum('montant'))['montant__sum']))
+    
+    
+    
+        
+    range_an = []
+    for i in range(today.year, today.year - 10, -1):
+        range_an.append(i)
+    
+    context = {
+        'projections' : projections,
+        'today':today,
+        'montant_paye_mois' : montant_paye_mois,
+        'montant_project_mois' : montant_project_mois,
+        'labels_month' : labels_month,
+        'projections_impots' : projections_impots,
+        'range_an' : range_an,
+        'num_m' : num_m,
+        'ans' : an,
+        'mois' : mois[num_m],
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
+
+    }
+    return render(request, "soft_cime/projections.html", context)
+
+
+@login_required
+def new_projection_contrib(request):
+    contribuables = contribuable.objects.all()
+    today = date.today()
+    message = ""
+    classmsg = ""
+    
+    
+    if request.method == 'POST':
+        contrib = contribuable.objects.filter(NIU=request.POST.get("contribuable"))
+        if len(contrib) != 0:
+            for c in contrib:
+                contribu = c
+            montant = request.POST.get("montant")    
+            if montant != "":
+                date1 = request.POST.get("mois")
+                if len(Projection.objects.filter(contribuable=contribu).filter(date__month = date1.split("-")[1]).filter(date__year = date1.split("-")[0]))==0:
+                    
+                    personnel = Personnel.objects.get(user = request.user)
+                    
+                    newProjection = Projection.objects.create(contribuable=contribu,montant=montant, date=date1, personnel=personnel)        
+                    newProjection.save()
+                    
+                    message = "Enregistré avec succès"
+                    classmsg = "text-success"
+                else:
+                    message = "Projection already exist"
+                    classmsg = "text-danger"
+            else:
+                message = "Entrer un montant valide"
+                classmsg = "text-danger"
+        else:
+            message = "Le contribuable n'existe pas"
+            classmsg = "text-danger"   
+        
+    context = {
+        'contribuables' : contribuables,
+        'today':today,
+        'message' : message,
+        'classmsg' : classmsg,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
+    }
+    return render(request, "soft_cime/projection-contrib-new.html", context)
+
+@login_required
+def new_projection_impot(request):
+    impots = Impot.objects.all()
+    today = date.today()
+    message = ""
+    classmsg = ""
+    
+    
+    if request.method == 'POST':
+        impot = Impot.objects.filter(impot=request.POST.get("impot"))
+        if len(impot) != 0:
+            for c in impot:
+                impot1 = c
+            montant = request.POST.get("montant")    
+            if montant != "":
+                date1 = request.POST.get("mois")
+                if len(Projection_Impot.objects.filter(impot=impot1).filter(date__month = date1.split("-")[1]).filter(date__year = date1.split("-")[0]))==0:
+                    
+                    personnel = Personnel.objects.get(user = request.user)
+                    
+                    newProjection = Projection_Impot.objects.create(impot=impot1,montant=montant, date=date1, personnel=personnel)        
+                    newProjection.save()
+                    
+                    message = "Enregistré avec succès"
+                    classmsg = "text-success"
+                else:
+                    message = "Projection already exist"
+                    classmsg = "text-danger"
+            else:
+                message = "Entrer un montant valide"
+                classmsg = "text-danger"
+        else:
+            message = "Le contribuable n'existe pas"
+            classmsg = "text-danger"   
+        
+    context = {
+        'impots' : impots,
+        'today':today,
+        'message' : message,
+        'classmsg' : classmsg,
+        'nb_dec_in' : Declaration.objects.filter(impots = None).count(),
+    }
+    return render(request, "soft_cime/projection-impot-new.html", context)
+
+
+# Execl PLAN D'ACTION
+
+@login_required
+def excel_plan_action(request,m,y):
+    wb=load_workbook("soft_cime/static/doc/Plan_actions.xlsx")
+    ws = wb.active
+    
+    
+    borderStyle = styles.Side(style = 'thin', color = '000000')
+    s = styles.NamedStyle(name = 's')
+    s.font = styles.Font(name = 'Times New Roman', size = 8, bold=False)
+    s.border = styles.Border(left = borderStyle, right = borderStyle, top = borderStyle, bottom = borderStyle)
+    
+    
+    s1 = styles.NamedStyle(name = 's1')
+    s1.font = styles.Font(name = 'Times New Roman', size = 8, bold=True)
+    s1.border = styles.Border(left = borderStyle, right = borderStyle, top = borderStyle, bottom = borderStyle)
+    s1.alignment.horizontal = "center"
+    
+    if mois[m][0] in ('A','E','I','O','U'): 
+        x = "'" 
+    else: 
+        x= "E"
+        
+    ws["A11"] =  "PLAN D'ACTIONS DU CIME AU TITRE DU MOIS D" + x + " " + mois[m].upper() + " " + str(y)
+    ws["A12"] =  "OBJECTIFS DU MOIS: " + str(Projection.objects.filter(date__month = m).filter(date__year = y).aggregate(Sum('montant'))['montant__sum'])
+    
+    ws["E18"] = "Estimation " + mois[m].upper() + " " + str(y)
+    ws["G18"] = "Réalisation " + mois[m-1].upper() + " " + str(y-1)
+    ws["H18"] = "Réalisation " + mois[m].upper() + " " + str(y-1)
+    j='B'
+    i=20
+    
+    ugs = UG.objects.all()
+    
+    for ug in ugs:
+        ws[j+str(i)] = "UG " + str(ug.ug) + " : " + ug.activite
+        j=chr(ord(j)+2)
+        
+        ws[j+str(i)] = ug.contribuable_set.count()
+        j=chr(ord(j)+1)
+        
+        ws[j+str(i)] = Projection.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m).filter(date__year=y).aggregate(Sum('montant'))['montant__sum']
+        j=chr(ord(j)+1)
+        
+        ws[j+str(i)] = Payement.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m).filter(date__year=y).aggregate(Sum('montant'))['montant__sum']
+        j=chr(ord(j)+1)
+        
+        ws[j+str(i)] = Payement.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m-1).filter(date__year=y-1).aggregate(Sum('montant'))['montant__sum']
+        j=chr(ord(j)+1)
+        
+        ws[j+str(i)] = Payement.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m).filter(date__year=y-1).aggregate(Sum('montant'))['montant__sum']
+        
+        i=i+1
+        j=chr(ord(j)-6)
+    
+    
+    ws["E30"] = "Estimation " + mois[m].upper() + " " + str(y)
+    ws["G30"] = "Réalisation " + mois[m-1].upper() + " " + str(y-1)
+    ws["H30"] = "Réalisation " + mois[m].upper() + " " + str(y-1)
+    
+    j='A'
+    i=32
+   
+    for ug in ugs:
+        ws.merge_cells(j+str(i)+":"+chr(ord(j)+7)+str(i))
+        ws[j+str(i)] = "UG " + str(ug.ug) + " : " + ug.activite
+        ws[j+str(i)].style = s1
+        
+        i=i+1
+        k=0
+        for contrib in ug.contribuable_set.all():
+            
+            montant = contrib.projection_set.filter(date__month=m).filter(date__year=y).aggregate(Sum('montant'))['montant__sum']
+            if  zeroifnone(montant) >= 500000:
+                k=k+1
+                ws[j+str(i)] = k
+                ws[j+str(i)].style = s
+                
+                j=chr(ord(j)+1)
+                
+                ws[j+str(i)] = contrib.raison_social
+                ws.merge_cells(j+str(i)+":"+chr(ord(j)+2)+str(i))
+                ws[j+str(i)].style = s
+                
+                j=chr(ord(j)+1)
+                ws[j+str(i)].style = s
+                j=chr(ord(j)+1)
+                ws[j+str(i)].style = s
+                
+                j=chr(ord(j)+1)
+                ws[j+str(i)] = montant
+                ws[j+str(i)].style = s
+                
+                j=chr(ord(j)+1)
+                ws[j+str(i)] = contrib.payement_set.filter(date__month=m).filter(date__year=y).aggregate(Sum('montant'))['montant__sum']
+                ws[j+str(i)].style = s
+                
+                j=chr(ord(j)+1)
+                ws[j+str(i)] = contrib.payement_set.filter(date__month=m-1).filter(date__year=y-1).aggregate(Sum('montant'))['montant__sum']
+                ws[j+str(i)].style = s
+                
+                j=chr(ord(j)+1)
+                ws[j+str(i)] = contrib.payement_set.filter(date__month=m).filter(date__year=y-1).aggregate(Sum('montant'))['montant__sum']
+                ws[j+str(i)].style = s
+                
+                
+                i=i+1
+                j=chr(ord(j)-7)
+
+        # Cumul Grands compte
+        
+        ws[j+str(i)] = "Cumul Grands Comptes"
+        ws.merge_cells(j+str(i)+":"+chr(ord(j)+3)+str(i))
+        ws[j+str(i)].style = s
+        
+        j=chr(ord(j)+1)
+        ws[j+str(i)].style = s
+        j=chr(ord(j)+1)
+        ws[j+str(i)].style = s
+        j=chr(ord(j)+1)
+        ws[j+str(i)].style = s
+        
+        if k != 0:        
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = "=SOMME("+j+str(i-k)+":"+j+str(i-1)+")"
+            ws[j+str(i)].style = s1
+            
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = "=SOMME("+j+str(i-k)+":"+j+str(i-1)+")"
+            ws[j+str(i)].style = s1
+            
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = "=SOMME("+j+str(i-k)+":"+j+str(i-1)+")"
+            ws[j+str(i)].style = s1
+            
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = "=SOMME("+j+str(i-k)+":"+j+str(i-1)+")"
+            ws[j+str(i)].style = s1
+        else:
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = 0
+            ws[j+str(i)].style = s1
+            
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = 0
+            ws[j+str(i)].style = s1
+            
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = 0
+            ws[j+str(i)].style = s1
+            
+            j=chr(ord(j)+1)
+            ws[j+str(i)] = 0
+            ws[j+str(i)].style = s1
+            
+        # Cumul Autre
+        j=chr(ord(j)-7)
+        i=i+1
+        
+        ws[j+str(i)] = "Cumul Autres"
+        ws.merge_cells(j+str(i)+":"+chr(ord(j)+3)+str(i))
+        ws[j+str(i)].style = s
+        
+        j=chr(ord(j)+1)
+        ws[j+str(i)].style = s
+        j=chr(ord(j)+1)
+        ws[j+str(i)].style = s
+        j=chr(ord(j)+1)
+        ws[j+str(i)].style = s
+                
+        j=chr(ord(j)+1)
+        ws[j+str(i)] = "=" + j + str(i-1) + "-" + str(zeroifnone(Projection.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m).filter(date__year=y).aggregate(Sum('montant'))['montant__sum']))
+        ws[j+str(i)].style = s1
+        
+        j=chr(ord(j)+1)
+        ws[j+str(i)] = "=" + j + str(i-1) + "-" + str(zeroifnone(Payement.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m).filter(date__year=y).aggregate(Sum('montant'))['montant__sum']))
+        ws[j+str(i)].style = s1
+        
+        j=chr(ord(j)+1)
+        ws[j+str(i)] = "=" + j + str(i-1) + "-" + str(zeroifnone(Payement.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m-1).filter(date__year=y-1).aggregate(Sum('montant'))['montant__sum']))
+        ws[j+str(i)].style = s1
+        
+        j=chr(ord(j)+1)
+        ws[j+str(i)] = "=" + j + str(i-1) + "-" + str(zeroifnone(Payement.objects.filter(contribuable__in = ug.contribuable_set.all()).filter(date__month=m).filter(date__year=y-1).aggregate(Sum('montant'))['montant__sum']))
+        ws[j+str(i)].style = s1
+        
+        j=chr(ord(j)-7)
+        
+        i=i+1
+        
+    wb.save(os.path.expanduser("~/Downloads/Plan d'action - " + mois[m] + " " + str(y) + ".xlsx"))
+    os.popen(os.path.expanduser("~/Downloads/Plan d'action - " + mois[m] + " " +  str(y) +".xlsx"))
+    
+    return redirect('stats_etats')
+
 
 
 
@@ -809,12 +1260,12 @@ def excelStats1(request):
     return redirect('stats_etats')
     
 @login_required    
-def stats2(request):
+def stat_perf_gestion(request):
     
     ugs = UG.objects.all()
     nbContrib = contribuable.objects.count()
     
-    impots = Impot.objects.all()
+    impots = Impot.objects.filter(type_impot="Budgétaire")
     sous_secteurs = Sous_secteur.objects.all()
     
     # if request.method != "POST":
@@ -1002,7 +1453,7 @@ def stat_perf_recette(request):
     for amr in amrs:
         line=[]
         line.append(amr.recette)
-        line.append(amr.contribuable.raison_social + " / " + str(amr.num_amr))
+        line.append(amr.contribuable.raison_social + " / AMR N°" + str(amr.num_amr))
         montant = 0
         montant_budg = 0
         for impot in impots_amr:
@@ -1150,9 +1601,51 @@ def stats_consolide_irc(request, m, y):
     ws[j+str(i)] = Impot.objects.get(Q(impot='PSA') and Q(impot="SOLDE PSA")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']
     
     
+    # PATENTE FEI
+    j=chr(ord(j) - 1)
+    i=i+3
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT FEI').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum'])))
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT FEI').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    # PATENTE CU
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT CU').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum'])))
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT CU').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    # LICENCE
+
+    # LICENCE FEICOM
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='LIC FEI').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum'])))
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Part_Impot.objects.get(nom='LIC FEI').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    # LICENCE CU
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='LIC COM').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum'])))
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Part_Impot.objects.get(nom='LIC COM').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    
+    # TDL
+    j=chr(ord(j) - 1)
+    i=i+1
+    ws[j+str(i)] = Impot.objects.get(impot='TDL').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum'] + Part_Impot.objects.get(nom='PAT TDL').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum'])))
+    j=chr(ord(j) + 1)
+    ws[j+str(i)] = Impot.objects.get(impot='TDL').impot_amr_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']
+    
+    
+    
+    
+    
     #CAC TVA FEICOM
     j=chr(ord(j) - 1)
-    i=i+8
+    i=i+1
     ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
     j=chr(ord(j) + 1)
     ws[j+str(i)] = zeroifnone(Impot.objects.get(Q(impot='TVA') and Q(impot="SOLDE TVA")).impot_amr_set.filter(Q(date__month = mois_stats) and Q(date__year = an_stats)).aggregate(Sum('montant'))['montant__sum']) * Part_Impot.objects.get(nom='CAC FEI').taux
@@ -1518,19 +2011,49 @@ def stats_recette_af(request, m, y):
     ws[j+str(i)] = (zeroifnone(Impot.objects.get(impot='IS').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) + zeroifnone(Impot.objects.get(impot='IS').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])) * Part_Impot.objects.get(nom='CAC COM').taux
     
     
-    # PATENTE 
+    # PATENTE FAR
     
+    i=i+2
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT FAR').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='PAT FAR').montant(zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum']))
     
+    # PATENTE FEI
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT FEI').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='PAT FEI').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    # PATENTE CU
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT CU').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='PAT CU').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    # PATENTE RAV
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT RAV').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='PAT RAV').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    # PATENTE CCAI
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT CCAI').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='PAT CCAI').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    # PATENTE CAPEF
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='PAT CAPEF').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='PAT CAPEF').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
     
     
     
     # LICENCE
+    # LICENCE FAR
+    i=i+2
+    ws[j+str(i)] = Part_Impot.objects.get(nom='LIC FAR').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='LIC FAR').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
     
+    # LICENCE FEICOM
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='LIC FEI').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='LIC FEI').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
+    # LICENCE CU
+    i=i+1
+    ws[j+str(i)] = Part_Impot.objects.get(nom='LIC COM').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='LIC COM').montant((zeroifnone(Impot.objects.get(impot='LICENCE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
     
     
     
     #TPF FRAIS D'ASSIETTE
-    i=i+18
+    i=i+7
     ws[j+str(i)] = (zeroifnone(Impot.objects.get(impot='TPF').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) + zeroifnone(Impot.objects.get(impot='TPF').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])) * Part_Impot.objects.get(nom='FAR 10%').taux
     #TPF FEICOM
     i=i+1
@@ -1561,14 +2084,18 @@ def stats_recette_af(request, m, y):
     i=i+21
     ws[j+str(i)] = (zeroifnone(Impot.objects.get(impot='TAV').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) + zeroifnone(Impot.objects.get(impot='TAV').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])) * Part_Impot.objects.get(nom='TAV IMPOT').taux
     #TAV COMMUNE
-    i=i+21
+    i=i+1
     ws[j+str(i)] = (zeroifnone(Impot.objects.get(impot='TAV').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) + zeroifnone(Impot.objects.get(impot='TAV').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])) * Part_Impot.objects.get(nom='TAV COM').taux
     #TAV BUDGET
-    i=i+21
+    i=i+1
     ws[j+str(i)] = (zeroifnone(Impot.objects.get(impot='TAV').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) + zeroifnone(Impot.objects.get(impot='TAV').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum']))
     
+    #CRTV
+    i=i+5
+    ws[j+str(i)] = (zeroifnone(Impot.objects.get(impot='RAV').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) + zeroifnone(Impot.objects.get(impot='RAV').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])) + Part_Impot.objects.get(nom='PAT RAV').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']))) + Part_Impot.objects.get(nom='PAT FEI').montant((zeroifnone(Impot.objects.get(impot='PATENTE').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum'])))
+    
     #CFC
-    i=i+6
+    i=i+1
     ws[j+str(i)] = (zeroifnone(Impot.objects.get(impot='CFC').impot_declare_set.filter(declaration__in = declaration).aggregate(Sum('montant'))['montant__sum']) + zeroifnone(Impot.objects.get(impot='CFC').impot_amr_set.filter(amr__in = amrs).aggregate(Sum('montant'))['montant__sum']))
     #FNE
     i=i+1

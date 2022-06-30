@@ -2,7 +2,7 @@
 
 
 {% block title %}
-Dashboard | SoftCIME
+Dashboard | Gestionnaire
 {% endblock title %}
 
 
@@ -12,7 +12,7 @@ Dashboard | SoftCIME
     <div class="row justify-content-around custom-line">
         <h1 class="h1 text-center text-uppercase">Bienvenue M. {{personnel.nom}}</h1><hr>
         <div class="col-3 row">
-            <div class="card bg-success bg-gradient col-11">
+            <div class="card bg-success bg-gradient shadow col-11">
                 <table>
                     <tr>
                         <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-people-fill"></i></th>
@@ -26,7 +26,7 @@ Dashboard | SoftCIME
             </div>
         </div>
         <div class="col-3 row">
-            <div class="card bg-danger bg-gradient col-11">
+            <div class="card bg-danger bg-gradient shadow col-11">
                 <table>
                     <tr>
                         <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-file-earmark-spreadsheet-fill"></i></th>
@@ -39,7 +39,7 @@ Dashboard | SoftCIME
             </div>
         </div>
         <div class="col-3 row">
-            <div class="card bg-warning bg-gradient col-11">
+            <div class="card bg-warning bg-gradient shadow col-11">
                 <table>
                     <tr>
                         <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-cash-coin"></i></th>
@@ -52,7 +52,7 @@ Dashboard | SoftCIME
             </div>
         </div>
         <div class="col-3 row">
-            <div class="card bg-info bg-gradient col-11">
+            <div class="card bg-info bg-gradient shadow col-11">
                 <table>
                     <tr>
                         <th class="h2 border-right text-white" style="font-size:100px;"><i class="bi bi-cash-coin"></i></th>
@@ -73,7 +73,7 @@ Dashboard | SoftCIME
             <canvas id="repartition_ss" ></canvas>
         </div>
         <div class="col-4 container bg-opacity-75 bg-white bg-gradient p-5 shadow">
-            <canvas id="chart_dec_mois" ></canvas>
+            <canvas id="chart_dec_mois" class="container-fluid"></canvas>
         </div>
         
         {% comment %} <div class="col-6 p-3 container-fluid">
@@ -83,6 +83,7 @@ Dashboard | SoftCIME
             <img src="data:image/png;base64,{{data}}" alt="" class="img-fluid" >
         </div> {% endcomment %}
     </div>
+
     <script>
         var barColors = [
         "#b91d47",
@@ -92,7 +93,7 @@ Dashboard | SoftCIME
         "#1e7145"
         ];
 
-    
+        
 
         var config = {
             type: 'pie',
@@ -145,42 +146,34 @@ Dashboard | SoftCIME
         };
 
         var config1 = {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: {{labels_month|safe}},
-                datasets: [{
-                    label: 'Data Source : CIME',
-                    data: {{ nbdec_mois|safe }},
-                    backgroundColor: [
-                        'rgba(255, 99, 132)',
-                        'rgba(255, 159, 64)',
-                        'rgba(255, 205, 86)',
-                        'rgba(75, 192, 192)',
-                        'rgba(54, 162, 235)',
-                        'rgba(153, 102, 255)',
-                        'rgba(201, 203, 207)',
-                        'rgba(255, 99, 132)',
-                        'rgba(255, 159, 64)',
-                        'rgba(255, 205, 86)',
-                        'rgba(75, 192, 192)',
-                        'rgba(54, 162, 235)'
-                        ],
-                    borderColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(255, 159, 64)',
-                        'rgb(255, 205, 86)',
-                        'rgb(75, 192, 192)',
-                        'rgb(54, 162, 235)',
-                        'rgb(153, 102, 255)',
-                        'rgb(201, 203, 207)',
-                        'rgb(255, 99, 132)',
-                        'rgb(255, 159, 64)',
-                        'rgb(255, 205, 86)',
-                        'rgb(75, 192, 192)',
-                        'rgb(54, 162, 235)'
-                        ],
+                datasets: [
+                    {
+                        label: 'Déclarations',
+                        data: {{ nbdec_mois|safe }},
+                        borderColor: [
+                            'rgb(60, 100, 235)'
+                            ],
+                    },
+                    {
+                        label: 'Payements',
+                        data: {{ nbpaye_mois|safe }},
+                        borderColor: [
+                            'rgb(120, 50, 118)'
+                            ],
+                    },
+                    {
+                        label: 'AMR',
+                        data: {{ nbamr_mois|safe }},
+                        borderColor: [
+                            'rgb(25, 50, 75)'
+                            ],
+                            
+                    }
                 
-                }],
+                ],
                 borderWidth: 1
                 
             },
@@ -194,22 +187,27 @@ Dashboard | SoftCIME
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Déclarations par mois'
+                        text: 'Déclarations et Payements par mois'
                     }
                 }
                 
             }
         };
 
+        
+
         window.onload = function() {
             var ctx1 = document.getElementById('chart_dec_mois').getContext('2d');
-            window.myBar = new Chart(ctx1, config1);
+            window.myLine = new Chart(ctx1, config1);
 
             var ctx = document.getElementById('repartition_ug').getContext('2d');
             window.myPie = new Chart(ctx, config);
 
             var ctx2 = document.getElementById('repartition_ss').getContext('2d');
-            window.myPie = new Chart(ctx2, config2);
+            window.myPie1 = new Chart(ctx2, config2);
+            
+            var ctx3 = document.getElementById('chart_amr_mois').getContext('2d');
+            window.myLine1 = new Chart(ctx3, config3);
         };
     </script>
 

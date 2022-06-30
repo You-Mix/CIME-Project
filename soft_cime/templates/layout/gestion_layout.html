@@ -1,7 +1,7 @@
 {% extends "layout/base.html" %}
 
 {% block title %}
-Gestion | SoftCIME
+Gestion et suivi
 {% endblock title %}
 
 {% block titleSide %}
@@ -22,12 +22,12 @@ Gestion et suivi
 </li>
 <li class="nav-item">
     <a href="{% url 'declaration_incomplete' %}" class="nav-link align-middle px-0 text-white-50">
-        <i class="bi bi-list-ol"></i> <span class="ms-1 d-none d-sm-inline">Déclarations incomplete</span>
+        <i class="bi bi-bug-fill"></i> <span class="ms-1 d-none d-sm-inline">Déclarations incomplete</span><sup class="text-danger">({{nb_dec_in}})</sup>
     </a>
 </li>
 <li class="nav-item">
-    <a href="#" class="nav-link align-middle px-0 text-white-50">
-        <i class="bi bi-pen-fill"></i> <span class="ms-1 d-none d-sm-inline">Plan d'action</span>
+    <a href="{% url 'projections' %}" class="nav-link align-middle px-0 text-white-50">
+        <i class="bi bi-pen-fill"></i> <span class="ms-1 d-none d-sm-inline">Projections</span>
     </a>
 </li>
 

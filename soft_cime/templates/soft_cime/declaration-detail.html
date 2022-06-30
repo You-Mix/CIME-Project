@@ -1,5 +1,8 @@
 {% extends "layout/gestion_layout.html" %}
 
+{% block title %}
+Déclaration {{declaration.num_avis}} 
+{% endblock title %}
 
 {% block contain %}
     
@@ -118,21 +121,22 @@
                             <th>Repartition</th>
                         </thead>
                         <tbody>
-                            {% for impot in impots_declares %}
+                            {% for a, b, c in im_dec %}
                                 <tr>
                                     <td>
-                                        {{impot.impot}}
+                                        {{a}}
                                     </td>
                                     <td>
-                                        {{impot.montant}}
+                                        {{b}}
                                     </td>
+                                    
                                     <td>
-                                        {% for part_impot in impot.impot.parts_impot.all %}
-                                            {{part_impot.nom}} : {% widthratio part_impot.taux 1 impot.montant %}<br>
-                                        {% endfor %}
+                                    {% for i in c %}
+                                        {{i}} <br>
+                                    {% endfor %}
                                     </td>
                                 </tr>
-                            {% endfor %}  
+                            {% endfor %} 
                         </tbody>
                     </table>
                 </div>

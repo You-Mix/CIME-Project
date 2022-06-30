@@ -79,7 +79,7 @@ class contribuable(models.Model):
      sous_secteur = models.ForeignKey(Sous_secteur, on_delete=models.CASCADE)
      
      def __str__(self):
-          return self.NIU
+          return self.NIU + ":" + self.raison_social
 
 
 ########################################################################
@@ -87,6 +87,9 @@ class contribuable(models.Model):
 ########################################################################
 class Cellule(models.Model):
      nom = models.CharField(max_length=200)
+     
+     def __str__(self):
+          return self.nom
 
 
 ########################################################################
@@ -95,7 +98,9 @@ class Cellule(models.Model):
 class Service(models.Model):
      nom = models.CharField(max_length=200)
      cellule = models.ForeignKey(Cellule, on_delete=models.CASCADE)
-
+     
+     def __str__(self):
+          return self.nom
 
 ########################################################################
 #                         CLASSE PERSONNEL                             #
@@ -120,12 +125,38 @@ class Part_Impot(models.Model):
      proprietaire = models.CharField(max_length=200)
      taux = models.DecimalField(max_digits=7, decimal_places=6)
      
-     def montant(self, montant_impot):
-          return self.taux * montant_impot
+     def montant(self, montant):
+          if "PAT " in self.nom and montant != 0:
+               if 141500 <= montant < 150000:
+                    tdl = 22500
+               elif 150000 <= montant < 200000:
+                    tdl = 30000
+               elif 200000 <= montant < 300000:
+                    tdl = 45000
+               elif 300000 <= montant < 400000:
+                    tdl = 60000
+               elif 400000 <= montant < 500000:
+                    tdl = 75000    
+               else:
+                    tdl = 90000
+                    
+               pat_theo = montant - tdl
+               
+               if "FAR" in self.nom:
+                    m = self.taux * montant
+               elif "TDL" in self.nom:
+                    m = self.taux * tdl
+               else:
+                    m = self.taux * pat_theo
+          else:
+               m = self.taux * montant
+
+          return round(m)
      
      def __str__(self):
           return self.nom
-     
+               
+
 ########################################################################
 #                     CLASSE IMPOT                                    #
 ########################################################################
@@ -220,7 +251,7 @@ class AMR(models.Model):
           return s
      
 ########################################################################
-#                   CLASSE PAYEMENT AMR                                #
+#                   CLASSE IMPOT AMR                                #
 ########################################################################
 class Impot_AMR(models.Model):
      amr = models.ForeignKey(AMR, on_delete=models.CASCADE)   
@@ -237,3 +268,43 @@ class Impot_AMR(models.Model):
           s = "{:,}".format(self.montant_budg).replace(',', ' ')
           return s
 
+
+########################################################################
+#                     CLASSE PROJECTION                                #
+########################################################################
+class Projection(models.Model):
+     date = models.DateField(auto_now=True)
+     personnel = models.ForeignKey(Personnel, on_delete=models.CASCADE)
+     contribuable = models.ForeignKey(contribuable, on_delete=models.CASCADE)
+     montant = models.PositiveIntegerField(null=True)  
+     CELLULE = (
+          ("GESTION ET SUIVI" , "Gestion et suivi"),
+          ("RECOUVREMENT" , "Recouvrement"),
+          ("CONTROLE" , "Controle"),
+     )
+     cellule = models.CharField(max_length=30, choices=CELLULE, null=True)
+     def montant_monnaie(self):
+          s = "{:,}".format(self.montant).replace(',', ' ')
+          return s
+     
+     
+     
+########################################################################
+#               CLASSE PROJECTION IMPOT                                #
+########################################################################
+class Projection_Impot(models.Model):
+     date = models.DateField(auto_now=True)
+     personnel = models.ForeignKey(Personnel, on_delete=models.CASCADE)
+     impot = models.ForeignKey(Impot, on_delete=models.CASCADE)
+     montant = models.PositiveIntegerField(null=True)  
+
+     def montant_monnaie(self):
+          s = "{:,}".format(self.montant).replace(',', ' ')
+          return s
+     
+
+
+
+
+     
+     

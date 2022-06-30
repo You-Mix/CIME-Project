@@ -1,213 +1,241 @@
 {% extends "layout/contrib_layout.html" %}
 
+{% block title %}
+Contribuable {{contribuable.raison_social}}
+{% endblock title %}
 
 {% block contain %}
     <h4 class="bg-success text-white text-center"> Détail Contribuable</h4>
-    <div class="container bootstrap snippets bootdey justify-content-center">
+    <div class="container bootstrap snippets bootdey justify-content-center shadow">
         <div class="panel-body inf-content justify-content-center">
             <div class="row justify-content-center">
-                <div class="col-md-4">
-                    {% load static %}
-                    <img alt="" style="width:600px;" title="" class="img-circle img-thumbnail isTooltip w-100 h-100" src="{% static 'img/logo-dgi.png' %}" data-original-title="Usuario"> 
-                </div>
-                <div class="col-md-6">
-                    <div class="table-responsive">
-                    <table class="table table-user-information">
-                        <tbody>
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-asterisk text-primary"></span>
-                                        NIU                                              
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.NIU}}  
-                                         
-                                </td>
-                            </tr>
-                            <tr>    
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-user  text-primary"></span>    
-                                        Raison Sociale
-                                                                                      
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.raison_social}}
+                <div class="col-md-10 row justify-content-center">
+                    <h5 class="h5 text-center text-uppercase bg-dark p-3 bg-opacity-25">Information Générales</h5>
+                    <div class="col-6 container bg-opacity-75 bg-white bg-gradient p-5 my-auto">
+                        <canvas id="chart_dec_mois" class="my-auto"></canvas>
+                    </div>
+                    <div class="table-responsive col-6">
+                        <table class="table table-user-information">
+                            <tbody>
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-asterisk text-primary"></span>
+                                            NIU                                              
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.NIU}}  
+                                            
+                                    </td>
+                                </tr>
+                                <tr>    
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-user  text-primary"></span>    
+                                            Raison Sociale
+                                                                                        
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.raison_social}}
+                                            
+                                    </td>
+                                </tr>
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-cloud text-primary"></span>  
+                                            Activité
+                                                                                        
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.activite}}  
                                         
-                                </td>
-                            </tr>
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-cloud text-primary"></span>  
-                                        Activité
-                                                                                       
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.activite}}  
-                                     
-                                </td>
-                            </tr>
-        
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-bookmark text-primary"></span> 
-                                        Régime D'imposition                                                
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.regime_impot.regime_impot}} 
-                                        
-                                </td>
-                            </tr>
-        
-        
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
-                                        Téléphone                                              
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.telephone}}  
-                                </td>
-                            </tr>
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
-                                        Arrondissement                                              
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.arrondissement}} 
-                                </td>
-                            </tr>
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
-                                        Département                                              
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.departement.departement}}  
-                                </td>
-                            </tr>
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
-                                        Unité de Gestion                                              
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.ug.ug}} 
-                                </td>
-                            </tr>
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
-                                        Sous Secteur                                             
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.sous_secteur.libelle}}  
-                                </td>
-                            </tr>
-                            <tr>        
-                                <td>
-                                    <strong>
-                                        <span class="glyphicon glyphicon-eye-open text-primary"></span> 
-                                        Statut                                          
-                                    </strong>
-                                </td>
-                                <td class="text-primary">
-                                    {{contribuable.statut}}  
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    </td>
+                                </tr>
+            
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-bookmark text-primary"></span> 
+                                            Régime D'imposition                                                
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.regime_impot.regime_impot}} 
+                                            
+                                    </td>
+                                </tr>
+            
+            
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                            Téléphone                                              
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.telephone}}  
+                                    </td>
+                                </tr>
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                            Arrondissement                                              
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.arrondissement}} 
+                                    </td>
+                                </tr>
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                            Département                                              
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.departement.departement}}  
+                                    </td>
+                                </tr>
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                            Unité de Gestion                                              
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.ug}} 
+                                    </td>
+                                </tr>
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                            Sous Secteur                                             
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.sous_secteur.libelle}}  
+                                    </td>
+                                </tr>
+                                <tr>        
+                                    <td>
+                                        <strong>
+                                            <span class="glyphicon glyphicon-eye-open text-primary"></span> 
+                                            Statut                                          
+                                        </strong>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{contribuable.statut}}  
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                
-                <div class="col-4">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th colspan="2">
-                                    Historique Déclarations
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for declaration in declarations_infos %}
-                            <tr>
-                                {% for dec in declaration %}
-                                <td>    
-                                    {{dec}}
-                                </td>
+            <div class="row justify-content-center">
+                <div class="col-10 row">
+                    <h5 class="h5 text-center text-uppercase bg-dark p-3 bg-opacity-25">HISTORIQUE</h5>
+                    <div class="col-4">
+                        <table class="table">
+                            <caption class="text-center" align="top">Déclarations</caption>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        N° Avis
+                                    </th>
+                                    <th>
+                                        Date
+                                    </th>
+                                    <th>
+                                        Montant
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for declaration in declarations_infos %}
+                                <tr>
+                                    {% for dec in declaration %}
+                                    <td>    
+                                        {{dec}}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
                                 {% endfor %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-4">
-                    <table class="table">
-                        <thead>
-                            
-                            <tr>
-                                <th colspan="2">
-                                    Historique Payements
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for payement in payements %}
-                            <tr>
-                                <td>    
-                                    {{payement.date}}
-                                </td>
-                                <td>    
-                                    {{payement.montant}}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-4">
-                    <table class="table">
-                        <thead>
-                            
-                            <tr>
-                                <th colspan="2">
-                                    Historique AMR
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for amr in amr_infos %}
-                            <tr>
-                                {% for a in amr %}
-                                <td>    
-                                    {{a}}
-                                </td>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-4">
+                        <table class="table">
+                            <caption class="text-center" align="top">Payements</caption>
+                            <thead>
+                                
+                                <tr>
+                                    <th>
+                                        N° Vir.
+                                    </th>
+                                    <th>
+                                        Date vir.
+                                    </th>
+                                    <th>
+                                        Montant
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payement in payements %}
+                                <tr>
+                                    <td>    
+                                        {{payement.num_virement}}
+                                    </td>
+                                    <td>    
+                                        {{payement.date_virement}}
+                                    </td>
+                                    <td>    
+                                        {{payement.montant}}
+                                    </td>
+                                </tr>
                                 {% endfor %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-4">
+                        <table class="table">
+                            <caption class="text-center" align="top">AMR</caption>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        N° AMR
+                                    </th>
+                                    <th>
+                                        Date 
+                                    </th>
+                                    <th>
+                                        Montant
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for amr in amr_infos %}
+                                <tr>
+                                    {% for a in amr %}
+                                    <td>    
+                                        {{a}}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
         </div>
     </div> 
@@ -220,5 +248,52 @@
         document.getElementById('menu').children[0].children[0].classList.add('text-white')
         document.getElementById('menu').children[0].children[0].classList.add('fw-bold')
         document.getElementById('menu').children[0].children[0].classList.remove('text-white-50')
+
+        var config1 = {
+            type: 'line',
+            data: {
+                labels: {{ labels_month|safe }},
+                datasets: [
+                        {
+                            label: 'Payement',
+                            data: {{ nbpaye_mois|safe }},
+                            borderColor: 'rgb(60, 100, 235)'
+                        },
+                        {
+                            label: 'Objectif',
+                            data: {{ objectif_mois|safe }},
+                            borderColor: 'rgb(30, 200, 117)'
+                        }
+
+                ],
+                borderWidth: 1
+                
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Réalisation par mois'
+                    }
+                }
+                
+            }
+        };
+
+        
+
+        window.onload = function(){
+            var ctx1 = document.getElementById('chart_dec_mois').getContext('2d');
+            window.myLine = new Chart(ctx1, config1);
+
+        };
+
+        
     </script>
 {% endblock contain %}

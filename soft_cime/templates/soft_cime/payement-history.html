@@ -8,7 +8,7 @@
         
         <thead>
             <tr>
-                <th rowspan="2">N° AVIS</th>
+                <th rowspan="2">N° Virement</th>
                 <th rowspan="2">Date virement</th>
                 <th colspan="2" class="text-center">Contribuable</th>
                 <th rowspan="2">Montant</th>
@@ -22,7 +22,7 @@
         <tbody>
            {% for payement in payements %}
             <tr>
-                <td>{{payement.num_avis}}</td>
+                <td>{{payement.num_virement}}</td>
                 <td>{{payement.date_virement}}</td>
                 <td>{{payement.contribuable.NIU}}</td>
                 <td>{{payement.contribuable.raison_social}}</td>
@@ -34,7 +34,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <th>N° AVIS</th>
+                <th>N° Virement</th>
                 <th>Date Virement</th>
                 <th colspan="2" class="text-center">Contribuable</th>
                 <th>Montant</th>

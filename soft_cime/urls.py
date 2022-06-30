@@ -4,7 +4,7 @@ from .views import *
 
 urlpatterns = [
     path('', index, name='index'),
-    path('accounts/login/', connexion, name='login'),
+    path('login/', connexion, name='login'),
     path('logout/', deconnection, name='logout'),
     
     path('contribuables/', liste_contribuable, name='liste_contribuable'),
@@ -20,6 +20,10 @@ urlpatterns = [
     path('gestion/update_declaration/<int:idDec>', update_declaration, name='update_declaration'),
     path('gestion/excel_declaration/<int:idDec>', excel_declaration, name='excel_declaration'),
     path('gestion/new_declaration/<int:idPaye>', new_declaration1, name='new_declaration1'),
+    path('gestion/projection_contribuable/', new_projection_contrib, name='new_projection_contrib'),
+    path('gestion/projection_impot/', new_projection_impot, name='new_projection_impot'),
+    path('gestion/projetions/', projections, name='projections'),
+    
     
     path('recette/', liste_payements, name='liste_payements'),
     path('recette/new_payement', new_payement, name='new_payement'),
@@ -27,7 +31,7 @@ urlpatterns = [
     
     path('statistiques/1', stats1, name='stats1'),
     path('statistiques/1/excelStats1', excelStats1, name='excelStats1'),
-    path('statistiques/2', stats2, name='stats2'),
+    path('statistiques/2', stat_perf_gestion, name='stats2'),
     path('statistiques/2/excelStats2', excelStats2, name='excelStats2'),
     path('statistiques/3', stat_perf_recette, name='stat_perf_recette'),
     
@@ -45,7 +49,7 @@ urlpatterns = [
     path('statistiques/stats_consolide_retc/<int:m>/<int:y>', stats_consolide_retc, name='stats_consolide_retc'),
     path('statistiques/etats_virements/<int:m>/<int:y>', excel_virements, name='excel_virements'),
     path('statistiques/recette_affectees/<int:m>/<int:y>', stats_recette_af, name='stats_recette_af'),    
-    
+    path('statistiques/plan_daction/<int:m>/<int:y>', excel_plan_action, name='excel_plan_action'), 
 
     
 

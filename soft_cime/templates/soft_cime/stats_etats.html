@@ -1,5 +1,8 @@
 {% extends "layout/stats_layout.html" %}
 
+{% block title %}
+Etats statistiques
+{% endblock title %}
 
 {% block contain %}
     <h4 class="bg-success text-white text-center"> ETATS STATISTIQUES</h4>
@@ -29,8 +32,8 @@
                         </div>
                         <div class="col-4">
                             <select class="form-select container-fluid" name="an">
-                                {% for an in range_an %}
-                                <option value="{{an}}">{{an}}</option>
+                                {% for a in range_an %}
+                                <option value="{{a}}" {% if a == an %}selected{% endif %}>{{a}}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -42,7 +45,7 @@
             </div>
             <div class="col-12">
                 
-                <table class="table table-bordered">
+                <table class="table table-bordered table-hover">
                     <thead class="text-center bg-dark bg-opacity-25">
                         <tr>
                             <th >
@@ -56,10 +59,12 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="h5">
                         <tr>
                             <td>
-                                Statistiques Consolidées des émissions et recouvrements des impots sur le revenu et à la consommation
+                                <a href="{% url 'stats_consolide_irc' num_m an %}" class="nav-link">
+                                    Statistiques Consolidées des émissions et recouvrements des impots sur le revenu et à la consommation
+                                </a>
                             </td>
                             <td>
                                 {{mois}}-{{an}}
@@ -70,7 +75,9 @@
                         </tr>
                         <tr>
                             <td>
-                                Statistiques Consolidées des émissions et recouvrements des recettes d'enregistrement, timbre et curatelle
+                                <a href="{% url 'stats_consolide_retc' num_m an %}" class="nav-link">
+                                    Statistiques Consolidées des émissions et recouvrements des recettes d'enregistrement, timbre et curatelle
+                                </a>
                             </td>
                             <td>
                                 {{mois}}-{{an}}
@@ -81,7 +88,9 @@
                         </tr>
                         <tr>
                             <td>
-                                Tableau statistique de suivi des recettes affectées
+                                <a href="{% url 'stats_recette_af' num_m an %}" class="nav-link">
+                                    Tableau statistique de suivi des recettes affectées
+                                </a>
                             </td>
                             <td>
                                 {{mois}}-{{an}}
@@ -92,7 +101,9 @@
                         </tr>
                         <tr>
                             <td>
-                                Repartition des contribuables (par UG, sous secteur, régime et département)
+                                <a href="{% url 'excelStats1' %}" class="nav-link">
+                                    Repartition des contribuables (par UG, sous secteur, régime et département)
+                                </a>
                             </td>
                             <td>
                                 {{mois}}-{{an}}
@@ -103,13 +114,28 @@
                         </tr>
                         <tr>
                             <td>
-                                Bordereau de virement éffectués
+                                <a href="{% url 'excel_virements' num_m an %}" class="nav-link">
+                                    Bordereau des virements éffectués
+                                </a>
                             </td>
                             <td>
                                 {{mois}}-{{an}}
                             </td>
                             <td>
                                 <a href="{% url 'excel_virements' num_m an %}" class="btn btn-info"><i class="bi bi-arrow-down-circle"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="{% url 'excel_plan_action' num_m an %}" class="nav-link">
+                                    Plan d'action 
+                                </a>
+                            </td>
+                            <td>
+                                {{mois}}-{{an}}
+                            </td>
+                            <td>
+                                <a href="{% url 'excel_plan_action' num_m an %}" class="btn btn-info"><i class="bi bi-arrow-down-circle"></i></a>
                             </td>
                         </tr>
                     </tbody>

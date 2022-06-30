@@ -1,14 +1,17 @@
 <!doctype html>
 <html lang="en">
   <head>
+    {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="author" content="Youafiq Sanda Haman">
+    <meta name="keywords" content="CIME, impots, moyennes entreprises, statistiques, émissions, recouvrement, gestion, amr"> 
     <meta name="generator" content="Hugo 0.88.1">
+    <link rel="icon" href="{% static 'img/Logo Gestionnaire CIME(1).ico' %}">
     <title>{% block title%} Soft CIME {% endblock %}</title>
 
-    {% load static %}
+    
     <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
     <link href="{% static "css/dataTables.bootstrap5.min.css" %}" rel="stylesheet">
     <link href="{% static "css/bootstrap-icons.css" %}" rel="stylesheet">
@@ -31,7 +34,7 @@
                     </ul>
 
                     <div class="text-end">
-                    <button type="button" class="btn btn-warning" onclick="window.open('{% url 'logout' %}')">Logout</button>
+                    <a href="{% url 'logout' %}" class="btn btn-warning" >Logout</a>
                     </div>
                 </div>
             </div>
@@ -52,10 +55,9 @@
     
         <footer class="bg-light text-center text-lg-start">
             <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-              @Copyright 2022
-                <a class="text-dark" href="https://mdbootstrap.com/">
+                @Gestionnaire 2022
+                <a class="text-dark" href="www.impots.cm">
                     <img src="{% static "img/logo-dgi.png" %}" alt="DGI" width="30" height="24">
-                    CIME BERTOUA
                 </a>
             </div>
         </footer>

@@ -1,5 +1,8 @@
 {% extends "layout/stats_layout.html" %}
 
+{% block title %}
+Statistiques de performance Recette
+{% endblock title %}
 
 {% block contain %}
     <h4 class="bg-success text-white text-center"> PERFORMANCE BRIGADE DE CONTROLE ET DES VERIFICATIONS/RECETTE DES IMPOTS</h4>
@@ -63,6 +66,6 @@
         document.getElementById('menu').children[1].children[0].classList.remove('text-white-50')
         
         document.getElementById('subperf').children[1].children[0].classList.add('text-white')
-        document.getElementById('subperf').children[1].children[0].classList.add('text-white-50')
+        document.getElementById('subperf').children[1].children[0].classList.remove('text-white-50')
     </script>
 {% endblock contain %}

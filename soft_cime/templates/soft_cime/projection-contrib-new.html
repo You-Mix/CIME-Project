@@ -1,7 +1,7 @@
 {% extends "layout/gestion_layout.html" %}
 
 {% block title %}
-Nouvelle Déclaration
+Nouvelle projection contribuable
 {% endblock title %}
 
 {% block contain %}
@@ -9,45 +9,41 @@ Nouvelle Déclaration
     <div class="row d-flex justify-content-center">
         <div class="col-xl-7 col-lg-9 col-md-9 col-11 text-center">
             <div class="card">
-                <h5 class="text-center  card-header bg-success text-white">NOUVELLE DECLARATION</h5>
+                <h5 class="text-center  card-header bg-success text-white">NOUVELLE PROJECTION</h5>
                 <form class="form-card card-body m-4 text-start" method="POST" action="">
                 {% csrf_token %}
                     <div class="row justify-content-between mb-3 ">
                         <div class="form-group col-sm-6 flex-column d-flex"> 
-                            <label class="form-control-label px-3" for="num_avis">Avis d'imposition<span class="text-danger"> *</span></label> 
-                            <input type="text" id="num_avis" name="num_avis" class="form-control" placeholder="N° Avis" value="{{payement.num_avis}}" required> 
-                        </div>
-                        <div class="form-group col-sm-6 flex-column d-flex"> 
                             <label class="form-control-label px-3" for="contribuable">Contribuable<span class="text-danger"> *</span></label> 
-                            {% comment %} <select id="contribuable" name="contribuable" class=" form-select" required>
-                                <option value="" disabled selected>Choisissez le NIU </option>
-                                {% for contribuable in contribuables %}
-                                <option value="{{contribuable.NIU}}">{{contribuable.NIU}}</option> 
-                                {% endfor %}
-                            </select> {% endcomment %}
                             <input type="text" class="form-control" id="contribuable" name="contribuable" placeholder="Entrer le NIU" list="liste-contribuable" value="{{payement.contribuable.NIU}}">
                             <datalist id="liste-contribuable">
                                 {% for contribuable in contribuables %}
                                 <option value="{{contribuable.NIU}}">{{contribuable.NIU}}</option> 
                                 {% endfor %}
                             </datalist>
-                            
-                                
+                        </div>
 
+                        <div class="form-group col-sm-6 flex-column d-flex"> 
+                            <label class="form-control-label px-3" for="mois">Mois<span class="text-danger"> *</span></label> 
+                            <input type="date" id="mois" name="mois" class="form-control" value="{{today.year}}-{% if today.month < 10 %}0{% endif %}{{today.month}}-15" required> 
                         </div>
                     </div>
                     <div class="row justify-content-between text-left mb-3">
                         <div class="form-group col-sm-6 flex-column d-flex"> 
-                            <label class="form-control-label px-3" for="chiffre_affaire">Chiffre d'affaire<span class="text-danger"> *</span></label> 
-                            <input type="number" id="chiffre_affaire" name="chiffre_affaire" class="form-control" placeholder="chiffre_affaire" required> 
+                            <label class="form-control-label px-3" for="montant">Montant<span class="text-danger"> *</span></label> 
+                            <input type="number" id="montant" name="montant" class="form-control" placeholder="chiffre_affaire" required> 
                         </div>
                         <div class="form-group col-sm-6 flex-column d-flex"> 
-                            <label class="form-control-label px-3" for="date_limite">Date Limite<span class="text-danger"> *</span></label> 
-                            <input type="date" id="date_limite" name="date_limite" class="form-control" value="{{today.year}}-{% if today.month < 10 %}0{% endif %}{{today.month}}-15" required> 
+                            <label class="form-control-label px-3" for="cellule">Cellule<span class="text-danger"> *</span></label> 
+                            <select id="cellule" name="cellule" class="form-select"> 
+                                <option value="GESTION ET SUIVI">Gestion et suivi</option>
+                                <option value="RECOUVREMENT">Recouvrement</option>
+                                <option value="CONTROLE">Controle</option>
+                            </select>
                         </div>
-                        
                     </div>
-                    <input type="submit" id="submit" name="submit" class="btn btn-success container-fluid" value="SUIVANT" > 
+                    <i class="bi bi-info-circle-fill text-success small text-center"> Choisissez n'importe quelle date pourvu qu'elle soit dans le mois souhaité </i>
+                    <input type="submit" id="submit" name="submit" class="btn btn-success container-fluid mt-3" value="ENREGISTRER" > 
                     
                 </div>
                 
@@ -65,9 +61,13 @@ Nouvelle Déclaration
     <script>
         document.getElementById('gestion').classList.add('fw-bold')
         document.getElementById('gestion').classList.add('fs-5')
-        document.getElementById('menu').children[1].children[0].classList.add('text-white')
-        document.getElementById('menu').children[1].children[0].classList.add('fw-bold')
-        document.getElementById('menu').children[1].children[0].classList.remove('text-white-50')
+        document.getElementById('menu').children[3].children[0].classList.add('text-white')
+        document.getElementById('menu').children[3].children[0].classList.add('fw-bold')
+        document.getElementById('menu').children[3].children[0].classList.remove('text-white-50')
+
+        document.getElementById('subperf').children[1].children[0].classList.add('text-white')
+        document.getElementById('subperf').children[1].children[0].classList.remove('text-white-50')
+
         $(function(){              
             $('#contribuable').autocomplete();
         });
